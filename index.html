@@ -1092,7 +1092,7 @@ var QUIZ_BANK = [
 /* ════ STATE ════ */
 var DRIVER = {id:'',name:'',route:'',agency:''};
 var S = {};
-var p5WalkShown=false, p8WalkShown=false, p10WalkShown=false, quizTransitionShown=false;
+var p5WalkShown=false, p8WalkShown=false, p10WalkShown=false;
 function resetState(){
   clearInterval(S.qrInt); clearInterval(S.continueInt); clearInterval(S.logoutInt); clearTimeout(S.scanTmr); clearTimeout(S.logoTmr);
   S = {mode:S.mode||'training',openedAreas:[],retrievedAreas:[],currentArea:null,
@@ -1102,7 +1102,7 @@ function resetState(){
        quizBank:[],quizIdx:0,quizMistakes:[],quizWrongThisQ:false,flowErrors:[],
        sessionComplete:false,kbUpper:true,errorCount:0,_doorsOpen:{},
        simStartTime:null,simEndTime:null,quizStartTime:null,quizEndTime:null};
-  p5WalkShown=false; p8WalkShown=false; p10WalkShown=false; quizTransitionShown=false;
+  p5WalkShown=false; p8WalkShown=false; p10WalkShown=false;
   preDoorsShown=false;
 }
 resetState();
@@ -1694,54 +1694,103 @@ function answerQuiz(chosen, qIdx){
   }
 }
 
+function getDeviceFingerprint(){
+  try {
+    var canvas=document.createElement('canvas');
+    var ctx=canvas.getContext('2d');
+    ctx.textBaseline='top';
+    ctx.font='14px Arial';
+    ctx.fillStyle='#f60';
+    ctx.fillRect(125,1,62,20);
+    ctx.fillStyle='#069';
+    ctx.fillText('SPX🔒',2,15);
+    ctx.fillStyle='rgba(102,204,0,0.7)';
+    ctx.fillText('SPX🔒',4,17);
+    var raw=canvas.toDataURL();
+    var hash=0;
+    for(var i=0;i<raw.length;i++){
+      hash=((hash<<5)-hash)+raw.charCodeAt(i);
+      hash=hash&hash;
+    }
+    return Math.abs(hash).toString(16).substring(0,8);
+  } catch(e){ return 'unknown'; }
+}
+
 function showScore(){
   var prog=$e('quizProgress'); if(prog) prog.style.width='100%';
   S.quizEndTime=Date.now();
   goTo('pScore');
 
-  /* Calculate durations */
-  function minsElapsed(start, end){
+  /* Durations */
+  function minsElapsed(start,end){
     if(!start||!end) return '';
     return (Math.round((end-start)/6000)/10).toFixed(1);
   }
-  var simDur=minsElapsed(S.simStartTime, S.simEndTime);
-  var quizDur=minsElapsed(S.quizStartTime, S.quizEndTime);
-  var totalDur=minsElapsed(S.simStartTime, S.quizEndTime);
+  var simDur=minsElapsed(S.simStartTime,S.simEndTime);
+  var quizDur=minsElapsed(S.quizStartTime,S.quizEndTime);
+  var totalDur=minsElapsed(S.simStartTime,S.quizEndTime);
 
-  /* Count questions answered correctly on first try */
+  /* Score */
   var firstTryCorrect=S.quizBank.length-S.quizMistakes.length;
-  var wrongTopics=S.quizMistakes.map(function(m){return m.imgLabel||m.img||'';}).join(', ');
+  var scorePct=Math.round((firstTryCorrect/S.quizBank.length)*100)+'%';
+  var scoreRaw=firstTryCorrect+'/'+S.quizBank.length;
 
-  /* Submit to Google Sheets */
+  /* Per-question results — Q1–Q9 in fixed order */
+  var qResults={};
+  S.quizBank.forEach(function(q,i){
+    var qNum=q.img||('Q'+(i+1));
+    var missed=S.quizMistakes.some(function(m){return m.correctText===q.correctText;});
+    qResults[qNum]=missed?'Fail':'Pass';
+  });
+  /* Build Q1–Q9 in order */
+  var qCols={};
+  for(var qi=1;qi<=9;qi++){
+    var key='Q'+qi;
+    qCols[key]=qResults[key]||'N/A';
+  }
+
+  /* Date + Time split (Singapore time) */
+  var now=new Date();
+  var sgDate=now.toLocaleDateString('en-SG',{timeZone:'Asia/Singapore',day:'2-digit',month:'2-digit',year:'numeric'});
+  var sgTime=now.toLocaleTimeString('en-SG',{timeZone:'Asia/Singapore',hour:'2-digit',minute:'2-digit',hour12:false});
+
+  /* Device fingerprint */
+  var deviceID=getDeviceFingerprint();
+
+  /* Submit */
   submitToSheet({
-    driverName:  DRIVER.name,
-    driverID:    DRIVER.id,
-    route:       DRIVER.route,
-    agency:      DRIVER.agency,
-    mode:        S.mode,
-    score:       firstTryCorrect+'/'+S.quizBank.length,
-    totalQ:      S.quizBank.length,
-    wrongTopics: wrongTopics||'None',
-    completed:   'Yes',
-    simDuration:  simDur,
-    quizDuration: quizDur,
-    totalDuration:totalDur
+    date:         sgDate,
+    time:         sgTime,
+    driverName:   DRIVER.name,
+    driverID:     DRIVER.id,
+    route:        DRIVER.route,
+    agency:       DRIVER.agency,
+    mode:         S.mode,
+    scorePct:     scorePct,
+    scoreRaw:     scoreRaw,
+    q1:qCols['Q1'],q2:qCols['Q2'],q3:qCols['Q3'],
+    q4:qCols['Q4'],q5:qCols['Q5'],q6:qCols['Q6'],
+    q7:qCols['Q7'],q8:qCols['Q8'],q9:qCols['Q9'],
+    wrongTNCount:  S.errorCount||0,
+    upsizeCount:   S.upsizeTotal||0,
+    reopenCount:   S.reopenCount||0,
+    simDuration:   simDur,
+    quizDuration:  quizDur,
+    totalDuration: totalDur,
+    deviceID:      deviceID,
+    completed:     'Yes'
   });
 
   var body=$e('scoreBody'); if(!body)return;
-
-  /* Always "pass" — this is a learning tool */
   var allCorrect=S.quizMistakes.length===0;
   body.innerHTML=
-    '<div style="width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:14px auto;border:6px solid #4caf50;">'+
-      '<div style="font-size:26px;font-weight:900;color:#4caf50;">'+firstTryCorrect+'/'+S.quizBank.length+'</div>'+
-      '<div style="font-size:11px;color:#888;text-align:center;">1st try</div>'+
+    '<div style="width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:14px auto;border:6px solid '+(allCorrect?'#4caf50':'#e8380d')+';">'+
+      '<div style="font-size:26px;font-weight:900;color:'+(allCorrect?'#4caf50':'#e8380d')+';">'+scorePct+'</div>'+
+      '<div style="font-size:11px;color:#888;text-align:center;">'+scoreRaw+' correct</div>'+
     '</div>'+
     '<div style="text-align:center;font-size:15px;font-weight:700;margin-bottom:6px;">'+(allCorrect?'Perfect Score!':'Assessment Complete!')+'</div>'+
-    '<div style="text-align:center;font-size:12px;color:#888;margin-bottom:14px;">'+(allCorrect?'Well done! You got everything right on the first try.':'Good effort. Look at the topics below to learn more.')+
-    /* Show time taken */
-    (totalDur?'<div style="margin-top:6px;font-size:11px;color:#aaa;">Total time: '+totalDur+' mins</div>':'')+
-    '</div>';
+    '<div style="text-align:center;font-size:12px;color:#888;margin-bottom:6px;">'+(allCorrect?'Well done! You got everything right on the first try.':'Good effort. Look at the topics below to learn more.')+'</div>'+
+    (totalDur?'<div style="text-align:center;font-size:11px;color:#aaa;margin-bottom:14px;">Total time: '+totalDur+' mins</div>':'<div style="margin-bottom:14px;"></div>');
 
   if(S.quizMistakes.length>0){
     var rev=document.createElement('div');
@@ -2825,7 +2874,7 @@ document.addEventListener('DOMContentLoaded', function(){
     else if(id==='trainingModalOKBtn'){closeModal('modalTraining');}
     else if(id==='incompleteExitBtn'){closeModal('modalIncomplete');doExit();}
     else if(id==='logoutP5Btn'||id==='logoutP7Btn'||id==='logoutP8Btn'){doLogout();}
-    else if(id==='takeAssessBtn'){if(!quizTransitionShown){quizTransitionShown=true;showQuizTransition();}else{goTo('pQuiz');}}
+    else if(id==='takeAssessBtn'){showQuizTransition();}
     else if(id==='exitFromP12Btn'){confirmExit();}
   });
 
@@ -2964,20 +3013,7 @@ document.addEventListener('DOMContentLoaded', function(){
   };
 
   /* ════ QUIZ TRANSITION CARD ════ */
-  var quizTransitionShown=false;
-  /* Intercept the Take Assessment button */
-  var takeAssessBtn=$e('takeAssessBtn');
-  if(takeAssessBtn){
-    takeAssessBtn.removeEventListener('click',function(){goTo('pQuiz');});
-    takeAssessBtn.addEventListener('click',function(){
-      if(!quizTransitionShown){
-        quizTransitionShown=true;
-        showQuizTransition();
-      } else {
-        goTo('pQuiz');
-      }
-    });
-  }
+  /* Handled entirely via app-level delegation — no direct listener needed */
 
   function showQuizTransition(){
     var overlay=document.createElement('div');
