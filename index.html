@@ -513,7 +513,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;display:flex;justify-content:center
       <div>
         <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Agency *</label>
         <div style="position:relative;" id="agencyDropdownWrap">
-          <input id="regAgency" type="text" placeholder="Search or select agency..." autocomplete="off"
+          <input id="regAgency" type="text" placeholder="e.g. Shopee Staff" autocomplete="off"
             style="width:100%;border:1.5px solid #ddd;border-radius:8px;padding:11px 13px;font-size:14px;outline:none;cursor:pointer;"
             readonly/>
           <span style="position:absolute;right:13px;top:50%;transform:translateY(-50%);color:#aaa;pointer-events:none;font-size:12px;" id="agencyChevron">▼</span>
@@ -2738,7 +2738,7 @@ document.addEventListener('DOMContentLoaded', function(){
     setAttr('regDriverID','placeholder','e.g. 123456');
     setAttr('regDriverName','placeholder','e.g. SPX_FTE_Jon');
     setAttr('regRoute','placeholder','e.g. 26A');
-    setAttr('regAgency','placeholder','e.g. SPX Express');
+    setAttr('regAgency','placeholder','e.g. Shopee Staff');
 
     /* Mode */
     setTxt('btnTrain',s.modeTrain); setTxt('btnTest',s.modeTest);
