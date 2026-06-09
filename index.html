@@ -35,7 +35,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;display:flex;justify-content:center
 .bp.dis{background:#f0b0a0!important;opacity:.7;cursor:not-allowed;}
 .bo{background:#fff;color:#e8380d;border:2px solid #e8380d;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;}
 .bgray{background:#fff;color:#666;border:1.5px solid #ddd;border-radius:8px;padding:14px;font-size:15px;font-weight:500;cursor:pointer;width:100%;}
-.bbar{padding:10px 14px;border-top:1px solid #f0f0f0;background:#fff;flex-shrink:0;}
+.bbar{padding:10px 14px;padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px));border-top:1px solid #f0f0f0;background:#fff;flex-shrink:0;}
 .bbar.two{display:flex;gap:10px;}
 .hint-strip{background:#fff8e1;border-left:3px solid #f9a825;padding:8px 12px;margin:8px 14px;font-size:11px;color:#7d5000;line-height:1.5;border-radius:4px;}
 .hint-strip b{color:#e65100;}
@@ -144,7 +144,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;display:flex;justify-content:center
 .msel button{flex:1;padding:11px;font-size:14px;font-weight:600;cursor:pointer;color:#e8380d;background:#fff;border:none;}
 .msel button.active{background:#e8380d;color:#fff;}
 .tap-dot{width:11px;height:11px;border-radius:50%;background:#eee;border:2px solid #ddd;transition:all .2s;}
-.toast{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(20,20,20,.93);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:600;z-index:500;white-space:nowrap;opacity:0;transition:opacity .25s;pointer-events:none;}
+.toast{position:absolute;bottom:calc(90px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%);background:rgba(20,20,20,.93);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:600;z-index:600;white-space:nowrap;opacity:0;transition:opacity .25s;pointer-events:none;}
 .toast.show{opacity:1;}
 
 /* ── Splash overlay ── */
@@ -219,7 +219,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;display:flex;justify-content:center
 /* ── Guide docked bar (change 4) ── */
 .guide-bar{position:absolute;left:0;right:0;z-index:350;display:none;flex-direction:column;background:#1e1e2e;transition:bottom .2s;}
 .guide-bar.on{display:flex;}
-.guide-bar-inner{display:flex;align-items:center;gap:10px;padding:9px 12px;}
+.guide-bar-inner{display:flex;align-items:center;gap:10px;padding:9px 12px;padding-bottom:calc(9px + env(safe-area-inset-bottom, 0px));}
 .guide-bar-avatar{width:36px;height:36px;flex-shrink:0;cursor:pointer;}
 .guide-bar-text{flex:1;font-size:12px;color:#fff;line-height:1.5;}
 .guide-bar-text b{color:#FFE000;}
@@ -1600,11 +1600,8 @@ function shuffleOpts(q){
 
 function iQuiz(){
   S.quizStartTime=Date.now();
-  /* Shuffle question order */
-  var bank=QUIZ_BANK.slice();
-  for(var i=bank.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=bank[i];bank[i]=bank[j];bank[j]=tmp;}
-  /* For each question, pre-shuffle its options */
-  S.quizBank=bank.map(function(q){
+  /* Keep question order fixed, only shuffle answer options */
+  S.quizBank=QUIZ_BANK.map(function(q){
     var s=shuffleOpts(q);
     return {sc:q.sc,img:q.img,imgLabel:q.imgLabel,q:q.q,opts:s.opts,ans:s.ans,exp:q.exp,correctText:q.correctText};
   });
