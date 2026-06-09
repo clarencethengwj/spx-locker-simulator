@@ -1,0 +1,3081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SPX Locker Training Simulator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;height:-webkit-fill-available;background:#1a1a1a;}
+body{font-family:'Segoe UI',Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;min-height:-webkit-fill-available;}
+.phone-bg{width:100%;min-height:100vh;background:#1a1a1a;display:flex;justify-content:center;align-items:center;padding:20px 0;}
+.phone{width:390px;height:844px;background:#fff;border-radius:40px;overflow:hidden;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.6);border:8px solid #222;flex-shrink:0;}
+@media(max-width:430px){
+  .phone-bg{padding:0;align-items:flex-start;}
+  .phone{width:100vw;width:100dvw;height:100vh;height:100dvh;border-radius:0;border:none;box-shadow:none;}
+}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:#fff;overflow:hidden;}
+.screen.active{display:flex;}
+.sbody{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.banner{width:100%;height:170px;background:linear-gradient(135deg,#e8380d 0%,#f05a28 50%,#e8380d 100%);position:relative;overflow:hidden;flex-shrink:0;}
+.banner.short{height:135px;}
+.logo-area{position:absolute;left:18px;top:50%;transform:translateY(-50%);}
+.logo-main{font-size:38px;font-weight:900;color:#fff;line-height:1;letter-spacing:-1px;}
+.logo-exp{font-size:13px;font-weight:700;letter-spacing:2px;vertical-align:super;}
+.logo-sub{font-size:22px;font-weight:900;color:#FFE000;letter-spacing:1px;margin-top:2px;}
+.pin{position:absolute;right:22px;top:14px;font-size:56px;filter:drop-shadow(2px 4px 6px rgba(0,0,0,.25));}
+.sbar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:7px 13px;font-size:11px;color:rgba(255,255,255,.9);z-index:5;}
+.ibar{background:#fff;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f0f0f0;flex-shrink:0;}
+.spxlogo{font-size:17px;font-weight:900;color:#e8380d;cursor:pointer;padding:4px 6px;border-radius:4px;user-select:none;}
+.locinfo{text-align:right;font-size:10px;color:#888;line-height:1.6;}
+.bp{background:#e8380d;color:#fff;border:none;border-radius:8px;padding:15px;font-size:16px;font-weight:600;width:100%;cursor:pointer;}
+.bp:active{opacity:.82;}
+.bp.dis{background:#f0b0a0!important;opacity:.7;cursor:not-allowed;}
+.bo{background:#fff;color:#e8380d;border:2px solid #e8380d;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+.bgray{background:#fff;color:#666;border:1.5px solid #ddd;border-radius:8px;padding:14px;font-size:15px;font-weight:500;cursor:pointer;width:100%;}
+.bbar{padding:10px 14px;border-top:1px solid #f0f0f0;background:#fff;flex-shrink:0;}
+.bbar.two{display:flex;gap:10px;}
+.hint-strip{background:#fff8e1;border-left:3px solid #f9a825;padding:8px 12px;margin:8px 14px;font-size:11px;color:#7d5000;line-height:1.5;border-radius:4px;}
+.hint-strip b{color:#e65100;}
+.deliv-row{padding:11px 14px 0;font-size:15px;font-weight:600;color:#222;}
+.deliv-row span{color:#e8380d;font-size:18px;}
+.scan-row{margin:7px 14px;border:1.5px solid #ddd;border-radius:8px;display:flex;align-items:center;padding:11px 13px;gap:9px;background:#fff;}
+.scan-row input{border:none;outline:none;flex:1;font-size:15px;color:#222;background:transparent;cursor:pointer;}
+.scan-row input::placeholder{color:#bbb;}
+.scan-status{min-height:28px;padding:7px 14px;font-size:13px;text-align:center;color:#999;}
+.empty-state{padding:4px 14px 14px;text-align:center;}
+.es-label{font-size:13px;color:#888;margin-bottom:5px;}
+.es-bar{width:30px;height:4px;background:#e8380d;border-radius:2px;margin:0 auto 14px;}
+.es-placeholder{display:flex;gap:12px;}
+.es-box{width:110px;height:110px;background:#f0f0f0;border-radius:8px;flex-shrink:0;}
+.es-lines{flex:1;display:flex;flex-direction:column;gap:8px;padding-top:4px;}
+.es-line{height:13px;background:#f0f0f0;border-radius:4px;}
+.deposit-section{background:#fff;margin:0 14px 8px;}
+.deposit-inbound-label{font-size:13px;color:#888;text-align:center;margin-bottom:2px;}
+.deposit-cell-id{font-size:20px;font-weight:700;color:#e8380d;text-align:center;margin-bottom:12px;}
+.deposit-row{display:flex;gap:12px;align-items:flex-start;}
+.cell-col-wrap{background:#f5f5f5;border-radius:10px;padding:12px 10px;display:flex;flex-direction:column;}
+.cell-col{display:flex;flex-direction:column;}
+.cell-box{border:2px solid #e8380d;padding:8px 14px;text-align:center;font-size:13px;font-weight:700;color:#e8380d;background:#fff;min-width:58px;border-radius:6px;}
+.cell-col.multi .cell-box{border-radius:0;border-bottom:1px dashed #e8380d;}
+.cell-col.multi .cell-box:first-child{border-radius:6px 6px 0 0;}
+.cell-col.multi .cell-box:last-child{border-radius:0 0 6px 6px;border-bottom:2px solid #e8380d;}
+.status-col{flex:1;display:flex;flex-direction:column;gap:10px;}
+.status-line{font-size:12px;color:#333;line-height:1.5;}
+.status-dot{color:#e8380d;font-weight:700;}
+.cell-btns{display:flex;gap:8px;}
+.cell-btn-active{flex:1;border:1.5px solid #e8380d;border-radius:6px;padding:9px 6px;font-size:13px;font-weight:600;color:#e8380d;background:#fff;cursor:pointer;}
+.cell-btn-disabled{flex:1;border:1.5px solid #ccc;border-radius:6px;padding:9px 6px;font-size:13px;font-weight:600;color:#ccc;background:#fff;cursor:not-allowed;}
+.x-pulse{animation:xpulse 1s ease-in-out infinite;}
+@keyframes xpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.5);}}
+.acard{margin:6px 14px;border:1.5px solid #eee;border-radius:10px;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;}
+.acard.opened{border-color:#ddd;background:#fafafa;}
+.acard-name{font-size:15px;font-weight:700;color:#222;}
+.acard-name.grey{color:#999;}
+.acard-count{font-size:12px;color:#888;margin-top:2px;}
+.acard-btn{border:2px solid #e8380d;border-radius:6px;padding:8px 18px;font-size:14px;font-weight:600;color:#e8380d;background:#fff;cursor:pointer;}
+.acard-btn.grey{border-color:#bbb;color:#999;}
+.kbo{position:absolute;bottom:0;left:0;right:0;background:#d1d5db;padding:6px 4px 8px;z-index:55;display:none;}
+.kbo.on{display:block;}
+.krow{display:flex;gap:4px;margin-bottom:4px;justify-content:center;}
+.kk{background:#fff;border-radius:5px;padding:9px 0;font-size:14px;font-weight:500;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.2);text-align:center;user-select:none;min-width:28px;flex:1;max-width:36px;}
+.kk:active{background:#ddd;}
+.kk.act{background:#8e9299;color:#fff;font-size:12px;max-width:50px;}
+.kk.del{background:#8e9299;color:#fff;max-width:44px;}
+.kk.sp{flex:3;max-width:180px;font-size:12px;}
+.sanim{display:none;position:absolute;inset:0;background:rgba(0,0,0,.78);z-index:80;flex-direction:column;align-items:center;justify-content:center;}
+.sanim.on{display:flex;}
+.svp{width:220px;height:145px;border:2px solid rgba(255,255,255,.4);border-radius:10px;position:relative;overflow:hidden;background:#000;}
+.sline{position:absolute;left:0;right:0;height:2px;background:#e8380d;box-shadow:0 0 8px #e8380d;animation:sm 1s linear infinite;}
+@keyframes sm{0%{top:0}50%{top:calc(100% - 2px)}100%{top:0}}
+.scorn{position:absolute;width:17px;height:17px;border-color:#e8380d;border-style:solid;}
+.tl{top:5px;left:5px;border-width:3px 0 0 3px;}
+.tr{top:5px;right:5px;border-width:3px 3px 0 0;}
+.bl{bottom:5px;left:5px;border-width:0 0 3px 3px;}
+.br{bottom:5px;right:5px;border-width:0 3px 3px 0;}
+.doors-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.78);z-index:160;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.doors-overlay.on{display:flex;}
+.doors-card{background:#1e1e2e;border-radius:18px;padding:20px 16px 18px;width:100%;display:flex;flex-direction:column;align-items:center;}
+.doors-card-title{color:#fff;font-size:14px;font-weight:700;margin-bottom:3px;text-align:center;}
+.doors-card-sub{color:rgba(255,255,255,.55);font-size:11px;margin-bottom:16px;text-align:center;line-height:1.5;padding:0 8px;}
+.locker-bank{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;width:100%;}
+.locker-unit{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.ld{width:62px;height:76px;position:relative;perspective:300px;cursor:pointer;}
+.ld-back{position:absolute;inset:0;background:#12122a;border-radius:6px;border:1px solid #3a3a5a;display:flex;align-items:center;justify-content:center;}
+.ld-parcel{font-size:20px;opacity:0;transform:scale(.5);transition:opacity .4s,transform .4s;}
+.ld-door{position:absolute;inset:0;background:linear-gradient(160deg,#f04020 0%,#b82a08 100%);border-radius:6px;transform-origin:left center;transform:rotateY(0deg);transition:transform .6s cubic-bezier(.25,.46,.45,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:3px 0 12px rgba(0,0,0,.5);pointer-events:none;}
+.ld-door-lbl{font-size:10px;font-weight:800;color:#fff;letter-spacing:.5px;}
+.ld-door-handle{width:4px;height:13px;background:rgba(255,255,255,.4);border-radius:2px;position:absolute;right:7px;top:50%;transform:translateY(-50%);}
+.ld-door-line{position:absolute;left:8px;right:12px;top:60%;height:1px;background:rgba(255,255,255,.15);}
+.ld-chip{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);}
+.ld-chip.done{background:rgba(76,175,80,.3);color:#a5d6a7;}
+.doors-continue{margin-top:16px;background:#e8380d;color:#fff;border:none;border-radius:10px;padding:13px 0;font-size:14px;font-weight:700;cursor:pointer;width:100%;opacity:0;transition:opacity .4s;pointer-events:none;}
+.doors-continue.show{opacity:1;pointer-events:all;}
+.blackbox{position:absolute;inset:0;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:95;}
+.blackbox.on{display:flex;}
+.mbg{position:absolute;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:200;}
+.mbg.on{display:flex;}
+.mbox{background:#fff;border-radius:16px;padding:22px 20px 0;margin:20px;width:100%;max-height:84vh;overflow-y:auto;}
+.mbox h3{font-size:17px;font-weight:700;text-align:center;margin-bottom:8px;}
+.mbox p{font-size:14px;color:#555;text-align:center;line-height:1.6;margin-bottom:16px;}
+.mbtns{display:flex;border-top:1px solid #eee;margin:0 -20px;}
+.mbtns button{flex:1;padding:15px;border:none;font-size:15px;font-weight:600;cursor:pointer;background:#fff;}
+.mbtns button.ml{color:#888;border-right:1px solid #eee;border-radius:0 0 0 16px;}
+.mbtns button.mr{color:#e8380d;border-radius:0 0 16px 0;}
+.mbtns button.mc{color:#e8380d;border-radius:0 0 16px 16px;}
+.maxup-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:210;}
+.maxup-overlay.on{display:flex;}
+.maxup-card{background:#fff;border-radius:16px;margin:20px;width:100%;padding:24px 20px 0;max-height:88vh;overflow-y:auto;}
+.maxup-card h2{font-size:18px;font-weight:700;text-align:center;color:#e8380d;margin-bottom:10px;}
+.sel-opt{border:1.5px solid #e8380d;border-radius:8px;padding:12px 14px;margin-bottom:9px;cursor:pointer;font-size:13px;color:#e8380d;font-weight:600;display:flex;align-items:center;gap:10px;}
+.sel-opt .radio{width:20px;height:20px;border-radius:50%;border:2px solid #e8380d;flex-shrink:0;}
+.action-zone{border:2px dashed #e8380d;border-radius:10px;padding:16px;margin:10px 0;text-align:center;background:#fff8f7;}
+.action-zone .az-label{font-size:12px;color:#e8380d;font-weight:600;margin-bottom:10px;}
+.action-target{display:inline-block;border:2px solid #e8380d;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:700;color:#e8380d;cursor:pointer;background:#fff;margin:4px;}
+.action-target.tapped{background:#4caf50;border-color:#4caf50;color:#fff;}
+.action-target.wrong-tap{background:#e8380d;border-color:#e8380d;color:#fff;animation:shake .3s;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.scircle{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:14px auto;border:6px solid #4caf50;}
+.scircle.fail{border-color:#e8380d;}
+.merr{background:#fff5f3;border-left:4px solid #e8380d;border-radius:4px;padding:9px;margin-bottom:7px;font-size:12px;}
+.msel{display:flex;border:2px solid #e8380d;border-radius:8px;overflow:hidden;margin:12px 0;}
+.msel button{flex:1;padding:11px;font-size:14px;font-weight:600;cursor:pointer;color:#e8380d;background:#fff;border:none;}
+.msel button.active{background:#e8380d;color:#fff;}
+.tap-dot{width:11px;height:11px;border-radius:50%;background:#eee;border:2px solid #ddd;transition:all .2s;}
+.toast{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(20,20,20,.93);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:600;z-index:500;white-space:nowrap;opacity:0;transition:opacity .25s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* ── Splash overlay ── */
+.splash-overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);z-index:400;display:flex;align-items:flex-end;justify-content:center;padding-bottom:40px;}
+.splash-card{background:#fff;border-radius:20px;padding:22px 20px;margin:0 14px;text-align:center;max-width:340px;width:100%;}
+.splash-icon{font-size:44px;margin-bottom:10px;}
+.splash-title{font-size:17px;font-weight:800;color:#222;margin-bottom:12px;}
+.splash-bullets{text-align:left;margin-bottom:16px;display:flex;flex-direction:column;gap:9px;}
+.splash-bullet{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:#444;line-height:1.5;}
+.splash-bullet-dot{width:22px;height:22px;border-radius:50%;background:#e8380d;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.splash-btn{background:#e8380d;color:#fff;border:none;border-radius:10px;padding:13px 0;font-size:15px;font-weight:700;width:100%;cursor:pointer;margin-bottom:10px;}
+.splash-how{background:none;border:none;color:#e8380d;font-size:13px;font-weight:600;cursor:pointer;padding:4px;width:100%;text-align:center;}
+/* Language pick buttons */
+.lang-pick-btn{width:100%;background:#fff;border:1.5px solid #e0e0e0;border-radius:10px;padding:13px 16px;font-size:14px;font-weight:500;color:#333;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .15s;}
+.lang-pick-btn.active{border-color:#e8380d;background:#fff8f7;color:#e8380d;}
+.lang-pick-btn:hover{border-color:#e8380d;background:#fff8f7;}
+.lang-pick-name{font-size:14px;}
+.lang-pick-check{font-size:14px;color:#e8380d;font-weight:700;}
+
+/* ── Walkthrough overlay ── */
+.walkthrough-overlay{position:absolute;inset:0;background:rgba(0,0,0,.78);z-index:450;display:none;align-items:flex-end;justify-content:center;padding:20px;}
+.walkthrough-overlay.on{display:flex;}
+.walkthrough-card{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:350px;}
+.walkthrough-step-img{width:100%;height:100px;background:linear-gradient(135deg,#fff3f0,#fff8f7);border-radius:10px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1.5px solid #f5cbb0;}
+.walkthrough-title{font-size:15px;font-weight:700;color:#222;margin-bottom:6px;}
+.walkthrough-body{font-size:13px;color:#555;line-height:1.6;margin-bottom:16px;}
+.walkthrough-nav{display:flex;justify-content:space-between;align-items:center;}
+.walkthrough-counter{font-size:12px;color:#aaa;font-weight:600;}
+.walkthrough-btns{display:flex;gap:8px;}
+.walkthrough-prev{background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;color:#888;cursor:pointer;}
+.walkthrough-next{background:#e8380d;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;}
+
+/* ── Step flow on p4 ── */
+.step-flow{display:flex;align-items:center;justify-content:center;margin:14px 14px 4px;padding:14px;background:#fff8f7;border-radius:10px;border:1.5px solid #f5cbb0;}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;}
+.step-num{width:28px;height:28px;border-radius:50%;background:#e8380d;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.step-label{font-size:11px;font-weight:700;color:#222;text-align:center;line-height:1.4;}
+.step-sub{font-size:10px;color:#888;text-align:center;line-height:1.3;}
+.step-arrow{font-size:20px;color:#e8380d;padding:0 4px;margin-bottom:16px;}
+
+/* ── Pre-doors info card ── */
+.pre-doors-overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);z-index:200;display:none;align-items:center;justify-content:center;padding:24px;}
+.pre-doors-overlay.on{display:flex;}
+.pre-doors-card{background:#fff;border-radius:16px;padding:22px 18px;width:100%;}
+.pre-doors-icon{width:52px;height:52px;border-radius:50%;background:#fff3e0;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:26px;}
+.pre-doors-title{font-size:16px;font-weight:700;text-align:center;color:#222;margin-bottom:10px;}
+.pre-doors-body{font-size:13px;color:#555;line-height:1.7;margin-bottom:10px;}
+.pre-doors-highlight{background:#fff3f0;border-left:3px solid #e8380d;padding:10px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#c62828;font-weight:600;line-height:1.6;margin-bottom:16px;}
+.pre-doors-btn{background:#e8380d;color:#fff;border:none;border-radius:10px;padding:13px 0;font-size:15px;font-weight:700;width:100%;cursor:pointer;}
+
+/* ── Upsize animation ── */
+@keyframes cellGrow{0%{width:42px;background:#e8380d;}100%{width:66px;background:#4caf50;}}
+@keyframes cellDoorSwing{0%{transform:rotateY(0deg);}100%{transform:rotateY(-80deg);}}
+.upsize-anim-wrap{background:#f5f5f5;border-radius:8px;padding:10px 14px;margin:8px 0;display:flex;align-items:center;justify-content:center;gap:14px;}
+.upsize-cell-before{width:42px;height:50px;background:#e8380d;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700;flex-shrink:0;opacity:.6;}
+.upsize-cell-after{height:50px;background:#4caf50;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700;flex-shrink:0;animation:cellGrow .5s ease-out forwards;}
+
+/* ── Quiz transition screen ── */
+.quiz-intro-body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:28px 22px;text-align:center;}
+.quiz-intro-icon{width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#e8380d,#f05a28);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px;}
+.quiz-intro-title{font-size:20px;font-weight:800;color:#222;margin-bottom:6px;}
+.quiz-intro-sub{font-size:13px;color:#888;margin-bottom:22px;line-height:1.6;}
+.quiz-stat-row{display:flex;gap:12px;width:100%;margin-bottom:20px;}
+.quiz-stat{flex:1;background:#fff8f7;border:1.5px solid #f5cbb0;border-radius:10px;padding:14px 10px;text-align:center;}
+.quiz-stat-num{font-size:22px;font-weight:800;color:#e8380d;}
+.quiz-stat-label{font-size:11px;color:#888;margin-top:3px;}
+.quiz-intro-rules{background:#f5f5f5;border-radius:10px;padding:14px;width:100%;text-align:left;margin-bottom:22px;}
+.quiz-intro-rule{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#555;line-height:1.5;margin-bottom:7px;}
+.quiz-intro-rule:last-child{margin-bottom:0;}
+.quiz-intro-rule b{color:#e8380d;flex-shrink:0;}
+
+/* ── Guide docked bar (change 4) ── */
+.guide-bar{position:absolute;left:0;right:0;z-index:350;display:none;flex-direction:column;background:#1e1e2e;transition:bottom .2s;}
+.guide-bar.on{display:flex;}
+.guide-bar-inner{display:flex;align-items:center;gap:10px;padding:9px 12px;}
+.guide-bar-avatar{width:36px;height:36px;flex-shrink:0;cursor:pointer;}
+.guide-bar-text{flex:1;font-size:12px;color:#fff;line-height:1.5;}
+.guide-bar-text b{color:#FFE000;}
+.guide-bar-controls{display:flex;gap:4px;align-items:center;flex-shrink:0;}
+.guide-bar-btn{background:rgba(255,255,255,.12);color:#fff;border:none;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer;}
+.guide-bar-btn:disabled{opacity:.3;cursor:default;}
+.guide-bar-close{background:none;border:none;color:rgba(255,255,255,.4);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;}
+.guide-bar-dots{display:flex;gap:3px;align-items:center;}
+.guide-bar-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.25);}
+.guide-bar-dot.on{background:#FFE000;width:7px;height:7px;}
+
+/* ── Globe lang button (change 1) ── */
+.lang-globe-btn{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.5);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;z-index:420;}
+.lang-dropdown{position:absolute;top:32px;right:0;background:#fff;border:1px solid #eee;border-radius:8px;padding:5px;display:none;flex-direction:column;gap:3px;z-index:430;box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:90px;}
+.lang-dropdown.on{display:flex;}
+.lang-drop-btn{padding:7px 12px;border-radius:5px;font-size:12px;font-weight:700;color:#555;border:none;background:#fff;cursor:pointer;text-align:left;}
+.lang-drop-btn.active{background:#e8380d;color:#fff;}
+.lang-drop-btn:hover{background:#f5f5f5;}
+
+/* ── Walkthrough tooltip overlay ── */
+.wt-overlay{position:absolute;inset:0;z-index:600;display:none;pointer-events:none;}
+.wt-overlay.on{display:block;}
+.wt-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);pointer-events:all;}
+.wt-highlight{position:absolute;border-radius:8px;box-shadow:0 0 0 3px #FFE000, 0 0 0 9999px rgba(0,0,0,.6);z-index:601;pointer-events:none;transition:all .3s;}
+.wt-card{position:absolute;background:#fff;border-radius:12px;padding:16px 16px 12px;width:260px;z-index:602;box-shadow:0 8px 32px rgba(0,0,0,.25);pointer-events:all;}
+.wt-card-title{font-size:14px;font-weight:700;color:#222;margin-bottom:6px;}
+.wt-card-body{font-size:12px;color:#555;line-height:1.6;margin-bottom:12px;}
+.wt-card-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f0f0f0;padding-top:10px;}
+.wt-counter{font-size:11px;color:#aaa;font-weight:600;}
+.wt-btns{display:flex;gap:8px;}
+.wt-btn-prev{background:#fff;border:1.5px solid #ddd;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;color:#888;cursor:pointer;}
+.wt-btn-next{background:#e8380d;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;}
+/* Arrow pointer on card */
+.wt-card::before{content:'';position:absolute;width:0;height:0;border:8px solid transparent;}
+.wt-card.arrow-top::before{border-bottom-color:#fff;top:-16px;left:24px;}
+.wt-card.arrow-bottom::before{border-top-color:#fff;bottom:-16px;left:24px;}
+.wt-card.arrow-right::before{border-left-color:#fff;right:-16px;top:20px;}
+
+/* ── Pre-doors info card ── */
+.predoors-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);z-index:550;display:none;align-items:center;justify-content:center;padding:24px;}
+.predoors-overlay.on{display:flex;}
+.predoors-card{background:#fff;border-radius:16px;padding:22px 20px;width:100%;}
+.predoors-card h3{font-size:16px;font-weight:700;color:#e8380d;margin-bottom:10px;}
+.predoors-card p{font-size:13px;color:#444;line-height:1.7;margin-bottom:16px;}
+.predoors-card .highlight-box{background:#fff8e1;border-left:3px solid #f9a825;border-radius:4px;padding:9px 12px;font-size:12px;color:#7d5000;margin-bottom:16px;line-height:1.6;}
+
+/* ── Quiz transition card ── */
+.quiz-transition-overlay{position:absolute;inset:0;background:rgba(0,0,0,.65);z-index:550;display:none;align-items:center;justify-content:center;padding:24px;}
+.quiz-transition-overlay.on{display:flex;}
+.quiz-transition-card{background:#fff;border-radius:16px;padding:24px 20px;width:100%;text-align:center;}
+.quiz-transition-card .qt-icon{font-size:44px;margin-bottom:10px;}
+.quiz-transition-card h3{font-size:17px;font-weight:700;color:#222;margin-bottom:14px;}
+.qt-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0;text-align:left;}
+.qt-row:last-of-type{border-bottom:none;}
+.qt-icon-sm{width:32px;height:32px;border-radius:50%;background:#e8380d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.qt-text{font-size:13px;color:#444;line-height:1.5;}
+.qt-text b{color:#222;}
+
+/* ── Upsize animation ── */
+.upsize-anim-overlay{position:absolute;inset:0;background:rgba(0,0,0,.75);z-index:560;display:none;align-items:center;justify-content:center;padding:20px;cursor:pointer;}
+.upsize-anim-overlay.on{display:flex;}
+.upsize-anim-card{background:#1e1e2e;border-radius:16px;padding:20px 16px;width:100%;text-align:center;}
+.upsize-anim-title{color:#FFE000;font-size:13px;font-weight:700;margin-bottom:4px;}
+.upsize-anim-sub{color:rgba(255,255,255,.6);font-size:11px;margin-bottom:16px;}
+.locker-visual{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-bottom:16px;height:100px;}
+.locker-cell{background:linear-gradient(160deg,#f04020,#b82a08);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;transition:all .5s cubic-bezier(.25,.46,.45,.94);position:relative;overflow:hidden;}
+.locker-cell .cell-label{font-size:10px;font-weight:800;letter-spacing:.5px;}
+.locker-cell .cell-handle{width:3px;height:10px;background:rgba(255,255,255,.4);border-radius:2px;position:absolute;right:5px;top:50%;transform:translateY(-50%);}
+.locker-cell.opening{animation:doorOpen .6s ease forwards;}
+@keyframes doorOpen{0%{transform:rotateY(0deg);}100%{transform:rotateY(-85deg);}}
+.upsize-tap-hint{color:rgba(255,255,255,.5);font-size:11px;}
+.agency-opt{padding:10px 12px;font-size:13px;color:#333;cursor:pointer;border-radius:5px;transition:background .1s;}
+.agency-opt:hover{background:#fff8f7;color:#e8380d;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes scanLine{0%{top:3px}50%{top:calc(100% - 4px)}100%{top:3px}}
+</style>
+</head>
+<body>
+<div class="phone-bg">
+<div class="phone" id="app">
+<div class="toast" id="toast"></div>
+
+<!-- GUIDE DOCKED BAR -->
+<div class="guide-bar" id="guideBar">
+  <div class="guide-bar-inner">
+    <svg class="guide-bar-avatar" id="guideAvatar" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="23" cy="23" r="23" fill="#e8380d"/>
+      <ellipse cx="23" cy="14" rx="8" ry="7" fill="#fff"/>
+      <rect x="15" y="14" width="16" height="3" rx="1.5" fill="#FFE000"/>
+      <circle cx="23" cy="20" r="5.5" fill="#FDBCB4"/>
+      <circle cx="21" cy="19" r=".8" fill="#333"/>
+      <circle cx="25" cy="19" r=".8" fill="#333"/>
+      <path d="M21 22 Q23 23.5 25 22" stroke="#c0735a" stroke-width=".8" fill="none" stroke-linecap="round"/>
+      <rect x="17" y="26" width="12" height="10" rx="3" fill="#e8380d"/>
+      <rect x="20" y="26" width="6" height="10" fill="#fff" opacity=".2"/>
+      <text x="23" y="34" text-anchor="middle" font-size="5" fill="#FFE000" font-weight="700" font-family="Arial">SPX</text>
+      <rect x="10" y="27" width="7" height="3" rx="1.5" fill="#FDBCB4"/>
+      <rect x="29" y="27" width="7" height="3" rx="1.5" fill="#FDBCB4"/>
+      <rect x="29" y="24" width="7" height="6" rx="1" fill="#f9a825"/>
+      <line x1="29" y1="27" x2="36" y2="27" stroke="#e65100" stroke-width=".8"/>
+      <line x1="32.5" y1="24" x2="32.5" y2="30" stroke="#e65100" stroke-width=".8"/>
+      <rect x="19" y="36" width="4" height="6" rx="2" fill="#333"/>
+      <rect x="23" y="36" width="4" height="6" rx="2" fill="#333"/>
+    </svg>
+    <div class="guide-bar-text" id="guideBarText">Hi! I am your SPX guide.</div>
+    <div class="guide-bar-controls">
+      <div class="guide-bar-dots" id="guideBarDots"></div>
+      <button class="guide-bar-btn" id="guideBarPrev">&#8592;</button>
+      <button class="guide-bar-btn" id="guideBarNext">&#8594;</button>
+      <button class="guide-bar-close" id="guideBarClose">&#x2715;</button>
+    </div>
+  </div>
+</div>
+
+<!-- SPLASH — language pick + welcome -->
+<div class="splash-overlay" id="splashOverlay" style="align-items:center;padding:0;">
+  <!-- STEP 1: Language selection -->
+  <div id="splashLangStep" style="width:100%;max-width:360px;padding:20px 16px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:40px;font-weight:900;color:#fff;letter-spacing:-2px;">SPX<span style="font-size:13px;font-weight:700;vertical-align:super;letter-spacing:1px;"> EXPRESS</span></div>
+      <div style="font-size:22px;font-weight:900;color:#FFE000;">LOCKER</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px;">Driver Training Simulator</div>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:20px;">
+      <div style="font-size:15px;font-weight:700;color:#222;margin-bottom:6px;text-align:center;">Select your language</div>
+      <div style="font-size:12px;color:#888;text-align:center;margin-bottom:16px;">请选择语言 / Pilih bahasa / மொழியை தேர்ந்தெடு</div>
+      <div style="display:flex;flex-direction:column;gap:8px;" id="langPickList">
+        <button class="lang-pick-btn active" data-lang="EN">
+          <span class="lang-pick-name">English</span>
+          <span class="lang-pick-check">✓</span>
+        </button>
+        <button class="lang-pick-btn" data-lang="MS">
+          <span class="lang-pick-name">Bahasa Melayu</span>
+          <span class="lang-pick-check" style="opacity:0;">✓</span>
+        </button>
+        <button class="lang-pick-btn" data-lang="TA">
+          <span class="lang-pick-name">தமிழ் (Tamil)</span>
+          <span class="lang-pick-check" style="opacity:0;">✓</span>
+        </button>
+        <button class="lang-pick-btn" data-lang="HI">
+          <span class="lang-pick-name">हिन्दी (Hindi)</span>
+          <span class="lang-pick-check" style="opacity:0;">✓</span>
+        </button>
+        <button class="lang-pick-btn" data-lang="ZH">
+          <span class="lang-pick-name">中文 (Chinese)</span>
+          <span class="lang-pick-check" style="opacity:0;">✓</span>
+        </button>
+      </div>
+      <button id="langPickNextBtn" style="margin-top:16px;background:#e8380d;color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;width:100%;cursor:pointer;">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Welcome card (shown after language pick) -->
+  <div id="splashWelcomeStep" style="display:none;width:100%;max-width:360px;padding:20px 16px;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:40px;font-weight:900;color:#fff;letter-spacing:-2px;">SPX<span style="font-size:13px;font-weight:700;vertical-align:super;letter-spacing:1px;"> EXPRESS</span></div>
+      <div style="font-size:22px;font-weight:900;color:#FFE000;">LOCKER</div>
+    </div>
+    <div class="splash-card">
+      <div class="splash-icon">📦</div>
+      <div class="splash-title" id="splashTitle">Welcome to SPX Locker Training</div>
+      <div class="splash-bullets" id="splashBullets">
+        <div class="splash-bullet"><div class="splash-bullet-dot">1</div><span id="splashB1">This is a practice run to help you learn the locker process</span></div>
+        <div class="splash-bullet"><div class="splash-bullet-dot">2</div><span id="splashB2">Follow the guide bar at the bottom for help</span></div>
+        <div class="splash-bullet"><div class="splash-bullet-dot">3</div><span id="splashB3">Tap <b>Driver Operation</b> on the next screen to begin</span></div>
+      </div>
+      <button class="splash-btn" id="splashOKBtn">I'm Ready</button>
+      <button class="splash-how" id="splashHowBtn">How does this work? →</button>
+    </div>
+  </div>
+</div>
+
+<!-- WALKTHROUGH OVERLAY -->
+<div class="walkthrough-overlay" id="walkthroughOverlay">
+  <div class="walkthrough-card">
+    <div class="walkthrough-step-img" id="wtStepImg"></div>
+    <div class="walkthrough-title" id="wtTitle"></div>
+    <div class="walkthrough-body" id="wtBody"></div>
+    <div class="walkthrough-nav">
+      <span class="walkthrough-counter" id="wtCounter"></span>
+      <div class="walkthrough-btns">
+        <button class="walkthrough-prev" id="wtPrev">← Back</button>
+        <button class="walkthrough-next" id="wtNext">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRE-DOORS OVERLAY -->
+<div class="pre-doors-overlay" id="preDoorsOverlay">
+  <div class="pre-doors-card">
+    <div class="pre-doors-icon">🔓</div>
+    <div class="pre-doors-title" id="preDoorsTitle">All doors will open at once</div>
+    <div class="pre-doors-body" id="preDoorsBody">When you tap <b>Open</b>, all compartment doors in this area will unlock and open at the same time.</div>
+    <div class="pre-doors-highlight" id="preDoorsHighlight">Collect ONLY parcels whose tracking numbers appear in your <b>View TN List</b>. Do not take any other parcels.</div>
+    <button class="pre-doors-btn" id="preDoorsOKBtn">OK, I understand</button>
+  </div>
+</div>
+
+<!-- SCAN REMINDER POPUP -->
+<div class="predoors-overlay" id="scanReminderOverlay">
+  <div style="background:#fff;border-radius:16px;width:100%;overflow:hidden;">
+    <!-- Header -->
+    <div style="background:#e8380d;padding:16px 18px 14px;">
+      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:3px;">Before you continue</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75);">Scan all parcels in your Driver App now</div>
+    </div>
+    <!-- Animated scan visual -->
+    <div style="margin:14px 18px 0;height:120px;background:#111;border-radius:10px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:16px;">
+      <div style="position:absolute;top:6px;left:0;right:0;text-align:center;font-size:9px;color:rgba(255,255,255,.4);">Open Driver App → Delivery → Scan to Retrieve</div>
+      <div style="position:absolute;top:6px;left:6px;width:9px;height:9px;border-top:2px solid rgba(255,255,255,.25);border-left:2px solid rgba(255,255,255,.25);"></div>
+      <div style="position:absolute;top:6px;right:6px;width:9px;height:9px;border-top:2px solid rgba(255,255,255,.25);border-right:2px solid rgba(255,255,255,.25);"></div>
+      <div style="position:absolute;bottom:6px;left:6px;width:9px;height:9px;border-bottom:2px solid rgba(255,255,255,.25);border-left:2px solid rgba(255,255,255,.25);"></div>
+      <div style="position:absolute;bottom:6px;right:6px;width:9px;height:9px;border-bottom:2px solid rgba(255,255,255,.25);border-right:2px solid rgba(255,255,255,.25);"></div>
+      <!-- Phone mockup -->
+      <div style="width:48px;height:78px;border:1.5px solid #444;border-radius:5px;background:#1a1a1a;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+        <div style="width:32px;height:4px;background:#333;border-radius:2px;margin-bottom:3px;"></div>
+        <div style="width:38px;height:46px;background:#0a0a0a;border-radius:2px;position:relative;overflow:hidden;">
+          <div style="position:absolute;left:0;right:0;height:1.5px;background:#e8380d;box-shadow:0 0 5px #e8380d;animation:scanLine 1.2s ease-in-out infinite;"></div>
+          <div style="position:absolute;bottom:4px;left:2px;right:2px;display:flex;gap:1.5px;align-items:flex-end;height:12px;">
+            <div style="flex:2;background:rgba(255,255,255,.5);height:100%;"></div>
+            <div style="flex:1;background:rgba(255,255,255,.3);height:70%;"></div>
+            <div style="flex:3;background:rgba(255,255,255,.5);height:100%;"></div>
+            <div style="flex:1;background:rgba(255,255,255,.3);height:60%;"></div>
+            <div style="flex:2;background:rgba(255,255,255,.5);height:90%;"></div>
+            <div style="flex:2;background:rgba(255,255,255,.5);height:100%;"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Parcel -->
+      <div style="width:32px;height:32px;background:#f9a825;border-radius:5px;display:flex;align-items:center;justify-content:center;">
+        <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><rect x="1" y="7" width="20" height="14" rx="2" fill="#e65100"/><rect x="1" y="7" width="20" height="5" rx="2" fill="#bf360c"/><line x1="11" y1="7" x2="11" y2="21" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><rect x="4" y="2" width="14" height="6" rx="1.5" fill="#f9a825"/></svg>
+      </div>
+    </div>
+    <!-- Steps -->
+    <div style="padding:12px 18px 0;display:flex;flex-direction:column;gap:9px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:22px;height:22px;border-radius:50%;background:#e8380d;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+        <div style="font-size:13px;color:#333;line-height:1.5;">Open your <b style="color:#e8380d;">SPX Driver App</b> and go to the <b style="color:#e8380d;">Delivery</b> page</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:22px;height:22px;border-radius:50%;background:#e8380d;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+        <div style="font-size:13px;color:#333;line-height:1.5;">Scan parcel into Driver App to receive it</div>
+      </div>
+    </div>
+    <!-- Checkbox -->
+    <div style="display:flex;gap:10px;align-items:center;margin:12px 18px 0;cursor:pointer;" id="scanReminderCheckRow">
+      <div id="scanReminderCheck" style="width:20px;height:20px;border:2px solid #ddd;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;"></div>
+      <div style="font-size:12px;color:#555;">I have scanned all parcels in my Driver App</div>
+    </div>
+    <!-- Button -->
+    <div style="padding:12px 18px 18px;">
+      <button id="scanReminderOKBtn" style="background:#f0b0a0;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;width:100%;cursor:pointer;opacity:.65;transition:all .2s;">I've scanned all parcels — Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOORS POPUP -->
+<div class="doors-overlay" id="doorsOverlay">
+  <div class="doors-card">
+    <div class="doors-card-title" id="doorsTitle">Opening compartments…</div>
+    <div class="doors-card-sub" id="doorsSub">Watch the doors open, then tap each one to collect the parcel</div>
+    <div class="locker-bank" id="lockerBank"></div>
+    <button class="doors-continue" id="doorsContinueBtn">✓ All Retrieved — Continue</button>
+  </div>
+</div>
+
+<!-- REGISTRATION -->
+<div class="screen active" id="pReg" style="background:linear-gradient(160deg,#e8380d,#f07050);justify-content:center;align-items:center;padding:24px;">
+  <div style="text-align:center;color:#fff;margin-bottom:22px;">
+    <div style="font-size:42px;font-weight:900;letter-spacing:-2px;">SPX<span style="font-size:14px;font-weight:700;vertical-align:super;letter-spacing:1px;"> EXPRESS</span></div>
+    <div style="font-size:24px;font-weight:900;color:#FFE000;">LOCKER</div>
+    <div style="font-size:12px;margin-top:4px;opacity:.85;">Driver Training Simulator</div>
+  </div>
+  <div style="background:#fff;border-radius:16px;padding:20px;width:100%;">
+    <div style="font-size:15px;font-weight:700;color:#222;margin-bottom:4px;" id="regTitle">Driver Registration</div>
+    <div style="font-size:12px;color:#888;margin-bottom:16px;" id="regSub">Please fill in your details before starting.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Driver ID * <span style="font-weight:400;color:#aaa;">(numbers only)</span></label>
+        <input id="regDriverID" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 123456" style="width:100%;border:1.5px solid #ddd;border-radius:8px;padding:11px 13px;font-size:14px;outline:none;"/>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Driver Name * <span style="font-weight:400;color:#aaa;">(e.g. SPX_FTE_Jon)</span></label>
+        <input id="regDriverName" type="text" placeholder="e.g. SPX_FTE_Jon" style="width:100%;border:1.5px solid #ddd;border-radius:8px;padding:11px 13px;font-size:14px;outline:none;"/>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Route * <span style="font-weight:400;color:#aaa;">(e.g. 26A)</span></label>
+        <input id="regRoute" type="text" placeholder="e.g. 26A" style="width:100%;border:1.5px solid #ddd;border-radius:8px;padding:11px 13px;font-size:14px;outline:none;text-transform:uppercase;"/>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Agency *</label>
+        <div style="position:relative;" id="agencyDropdownWrap">
+          <input id="regAgency" type="text" placeholder="Search or select agency..." autocomplete="off"
+            style="width:100%;border:1.5px solid #ddd;border-radius:8px;padding:11px 13px;font-size:14px;outline:none;cursor:pointer;"
+            readonly/>
+          <span style="position:absolute;right:13px;top:50%;transform:translateY(-50%);color:#aaa;pointer-events:none;font-size:12px;" id="agencyChevron">▼</span>
+          <!-- Dropdown panel -->
+          <div id="agencyDropdown" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid #ddd;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:999;overflow:hidden;">
+            <div style="padding:8px;">
+              <input id="agencySearch" type="text" placeholder="Search agency..." autocomplete="off"
+                style="width:100%;border:1.5px solid #eee;border-radius:6px;padding:8px 10px;font-size:13px;outline:none;"/>
+            </div>
+            <div id="agencyList" style="max-height:180px;overflow-y:auto;padding:0 4px 6px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="regErr" style="font-size:12px;color:#e8380d;margin-top:8px;min-height:18px;"></div>
+    <button class="bp dis" id="regBtn" style="margin-top:14px;">Continue →</button>
+  </div>
+</div>
+
+<!-- MODE SELECT -->
+<div class="screen" id="pMode" style="background:linear-gradient(160deg,#e8380d,#f07050);justify-content:center;align-items:center;padding:28px;">
+  <div style="text-align:center;color:#fff;margin-bottom:28px;">
+    <div style="font-size:44px;font-weight:900;letter-spacing:-2px;">SPX<span style="font-size:15px;font-weight:700;vertical-align:super;letter-spacing:1px;"> EXPRESS</span></div>
+    <div style="font-size:26px;font-weight:900;color:#FFE000;">LOCKER</div>
+    <div style="font-size:13px;margin-top:5px;opacity:.85;">Driver Training Simulator</div>
+  </div>
+  <div style="background:#fff;border-radius:16px;padding:20px;width:100%;">
+    <div style="font-size:13px;color:#888;margin-bottom:4px;">Welcome, <b id="welcomeName" style="color:#222;"></b></div>
+    <div style="font-size:12px;color:#aaa;margin-bottom:14px;" id="welcomeSub"></div>
+    <div style="font-size:15px;font-weight:700;color:#222;margin-bottom:8px;">Select Mode</div>
+    <div class="msel">
+      <button id="btnTrain" class="active">🎓 Training</button>
+      <button id="btnTest">📝 Assessment</button>
+    </div>
+    <div id="modeDesc" style="font-size:12px;color:#888;text-align:center;margin-bottom:16px;">Guided flow with step-by-step hints</div>
+    <button class="bp" id="beginBtn">Begin</button>
+  </div>
+</div>
+
+<!-- PAGE 1 -->
+<div class="screen" id="p1">
+  <div class="banner">
+    <div class="sbar"><span>📍 QM52000027</span><span>Shopee Collection Point</span></div>
+    <div class="logo-area"><div class="logo-main">SPX<span class="logo-exp"> EXPRESS</span></div><div class="logo-sub">LOCKER</div></div>
+    <div class="pin">📍</div>
+  </div>
+  <div class="ibar">
+    <span class="spxlogo" id="spxLogoP1">SPX</span>
+    <div class="locinfo"><div>🏢 SPX Locker @ Galaxis, S138522 (Q2349-3)</div><div>📞 Customer Service: 99998888</div></div>
+  </div>
+  <div class="sbody" style="display:flex;flex-direction:column;justify-content:space-between;padding:16px;min-height:0;">
+    <div>
+      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:10px;">
+        <div class="tap-dot" id="dot1"></div><div class="tap-dot" id="dot2"></div><div class="tap-dot" id="dot3"></div>
+      </div>
+      <div id="tapCount" style="text-align:center;font-size:13px;color:#e8380d;font-weight:700;min-height:20px;margin-bottom:8px;"></div>
+      <div style="font-size:17px;font-weight:700;text-align:center;" id="p1TitleTxt">SPX Locker @ Galaxis, S138522</div>
+      <div style="font-size:13px;color:#888;text-align:center;margin:4px 0 14px;" id="p1SubTxt">Please select a service to begin.</div>
+      <div id="collectionBtn" style="border:2px solid #f0e0dc;border-radius:12px;padding:30px 20px;text-align:center;cursor:pointer;background:linear-gradient(135deg,#fff8f7,#fff);">
+        <div style="font-size:48px;margin-bottom:8px;">📦</div>
+        <div style="font-size:20px;font-weight:700;" id="p1CollectionTxt">Collection</div>
+      </div>
+    </div>
+    <!-- Driver Operation link — matches reference screenshot -->
+    <div id="driverOpBtn" style="border-top:1px solid #f0f0f0;margin-top:16px;padding-top:14px;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;padding-bottom:4px;">
+      <span style="font-size:14px;font-weight:600;color:#555;" id="driverOpTxt">Driver Operation</span>
+      <span style="font-size:13px;color:#aaa;">▶</span>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="screen" id="p2">
+  <div class="banner">
+    <div class="sbar"><span>📍 QM52000027</span><span>Shopee Collection Point</span></div>
+    <div class="logo-area"><div class="logo-main">SPX<span class="logo-exp"> EXPRESS</span></div><div class="logo-sub">LOCKER</div></div>
+    <div class="pin">📍</div>
+  </div>
+  <div class="ibar"><span class="spxlogo">SPX</span><div class="locinfo"><div>🏢 SPX Locker @ Galaxis, S138522 (Q2349-3)</div><div>📞 Customer Service: 99998888</div></div></div>
+  <div class="sbody" style="padding:20px 14px;display:flex;flex-direction:column;align-items:center;">
+    <div style="font-size:20px;font-weight:700;text-align:center;margin-bottom:4px;">Please scan QR code to log in</div>
+    <div style="font-size:13px;color:#888;text-align:center;margin-bottom:20px;">Scan QR code with your SPX Driver APP.</div>
+    <div id="qrBox" style="width:180px;height:180px;border:1.5px solid #ddd;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;margin-bottom:18px;">
+      <div id="qrLoad" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="width:28px;height:28px;border:3px solid #eee;border-top-color:#e8380d;border-radius:50%;animation:spin .8s linear infinite;"></div>
+        <div style="font-size:12px;color:#888;">Loading</div>
+      </div>
+      <svg id="qrSvg" style="display:none;width:150px;height:150px;" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="5" width="28" height="28" fill="none" stroke="#333" stroke-width="3.5"/><rect x="11" y="11" width="16" height="16" fill="#333"/>
+        <rect x="67" y="5" width="28" height="28" fill="none" stroke="#333" stroke-width="3.5"/><rect x="73" y="11" width="16" height="16" fill="#333"/>
+        <rect x="5" y="67" width="28" height="28" fill="none" stroke="#333" stroke-width="3.5"/><rect x="11" y="73" width="16" height="16" fill="#333"/>
+        <rect x="40" y="5" width="7" height="7" fill="#333"/><rect x="51" y="5" width="7" height="7" fill="#333"/>
+        <rect x="40" y="16" width="7" height="7" fill="#333"/><rect x="51" y="16" width="7" height="7" fill="#333"/>
+        <rect x="5" y="40" width="7" height="7" fill="#333"/><rect x="16" y="40" width="7" height="7" fill="#333"/>
+        <rect x="40" y="40" width="7" height="7" fill="#333"/><rect x="51" y="40" width="7" height="7" fill="#333"/>
+        <rect x="62" y="40" width="7" height="7" fill="#333"/><rect x="73" y="40" width="7" height="7" fill="#333"/>
+        <rect x="84" y="40" width="7" height="7" fill="#333"/><rect x="40" y="51" width="7" height="7" fill="#333"/>
+        <rect x="62" y="51" width="7" height="7" fill="#333"/><rect x="84" y="51" width="7" height="7" fill="#333"/>
+        <rect x="40" y="62" width="7" height="7" fill="#333"/><rect x="51" y="62" width="7" height="7" fill="#333"/>
+        <rect x="73" y="62" width="7" height="7" fill="#333"/><rect x="51" y="73" width="7" height="7" fill="#333"/>
+        <rect x="40" y="84" width="7" height="7" fill="#333"/><rect x="62" y="84" width="7" height="7" fill="#333"/><rect x="73" y="84" width="7" height="7" fill="#333"/>
+      </svg>
+    </div>
+    <button id="cancelQRBtn" class="bgray" style="width:160px;">Cancel</button>
+  </div>
+</div>
+
+<!-- PAGE 4 -->
+<div class="screen" id="p4">
+  <div class="banner"><div class="sbar"><span>📍 QM52000027</span><span>Shopee Collection Point</span></div><div class="logo-area"><div class="logo-main">SPX<span class="logo-exp"> EXPRESS</span></div><div class="logo-sub">LOCKER</div></div><div class="pin">📍</div></div>
+  <div class="ibar"><span class="spxlogo">SPX</span><div class="locinfo"><div>🏢 SPX Locker @ Galaxis, S138522 (Q2349-3)</div><div>📞 Customer Service: 99998888</div></div></div>
+  <div class="sbody" style="padding:14px;">
+    <div style="width:54px;height:54px;background:#4caf50;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:16px auto 10px;font-size:26px;color:#fff;">✓</div>
+    <div style="font-size:18px;font-weight:700;text-align:center;">Log in successfully</div>
+    <div style="font-size:13px;color:#888;text-align:center;margin:4px 0 16px;">Please follow the instructions to finish the Locker task.</div>
+    <div style="border:1.5px solid #eee;border-radius:10px;display:flex;overflow:hidden;margin-bottom:12px;">
+      <div style="flex:1;padding:16px;text-align:center;border-right:1.5px solid #eee;"><div style="font-size:30px;font-weight:700;">12</div><div style="font-size:12px;color:#888;margin-top:3px;">Pending Retrieval</div></div>
+      <div style="flex:1;padding:16px;text-align:center;"><div style="font-size:30px;font-weight:700;">3</div><div style="font-size:12px;color:#888;margin-top:3px;">Pending Delivery</div></div>
+    </div>
+    <!-- Training briefing shown as popup via JS -->
+  </div>
+  <div class="bbar"><button class="bp" id="startTaskBtn">Start Task</button></div>
+</div>
+
+<!-- PAGE 5 -->
+<div class="screen" id="p5">
+  <div class="banner short"><div class="sbar"><span>📍 QM52000027</span><span>Shopee Collection Point</span></div><div class="logo-area"><div class="logo-main">SPX<span class="logo-exp"> EXPRESS</span></div><div class="logo-sub">LOCKER</div></div><div class="pin">📍</div></div>
+  <div class="ibar"><span class="spxlogo">SPX</span><div class="locinfo"><div>🏢 SPX Locker @ Galaxis, S138522 (Q2349-3)</div><div>📞 Customer Service: 99998888</div></div></div>
+  <div style="padding:11px 14px 4px;flex-shrink:0;">
+    <div style="font-size:14px;font-weight:700;">Total <span style="color:#e8380d;">12 parcel(s)</span> pending retrieve</div>
+    <div style="font-size:11px;color:#888;margin-top:2px;">Ensure all doors are closed before proceeding to the next step.</div>
+  </div>
+  <div id="areaList" class="sbody" style="padding-bottom:6px;"></div>
+  <div class="bbar two">
+    <button class="bgray" style="flex:1;" id="logoutP5Btn">Log Out</button>
+    <button class="bp" style="flex:2;" id="completeRetrievalBtn">Complete Retrieval</button>
+  </div>
+</div>
+
+<!-- PAGE 6 -->
+<div class="screen" id="p6">
+  <div class="banner short"><div class="sbar"><span>📍 QM52000027</span><span>Shopee Collection Point</span></div><div class="logo-area"><div class="logo-main">SPX<span class="logo-exp"> EXPRESS</span></div><div class="logo-sub">LOCKER</div></div><div class="pin">📍</div></div>
+  <div class="ibar" style="background:#f9f9f9;"><span class="spxlogo">SPX</span><div class="locinfo"><div>🏢 SPX Locker @ Galaxis, S138522 (Q2349-3)</div><div>📞 Customer Service: 99998888</div></div></div>
+  <div style="padding:10px 14px 4px;background:#f9f9f9;flex-shrink:0;">
+    <div id="mapTitle" style="font-size:14px;font-weight:700;"></div>
+    <span id="viewOrderListBtn" style="font-size:13px;color:#2196f3;cursor:pointer;">View Order List</span>
+  </div>
+  <div class="sbody" style="padding:8px 14px;"><div id="p6body"></div></div>
+</div>
+
+<!-- PAGE 7 -->
+<div class="screen" id="p7">
+  <!-- Tall illustrated banner -->
+  <div style="background:linear-gradient(135deg,#e8380d 0%,#f05a28 60%,#e8380d 100%);position:relative;flex-shrink:0;height:200px;overflow:hidden;">
+    <div class="sbar"><span>📍 QM52000027</span><span>Shopee Collection Point</span></div>
+    <!-- SPX logo text -->
+    <div style="position:absolute;left:18px;bottom:38px;">
+      <div style="font-size:42px;font-weight:900;color:#fff;line-height:1;letter-spacing:-2px;">SPX<span style="font-size:14px;font-weight:700;vertical-align:super;letter-spacing:2px;"> EXPRESS</span></div>
+      <div style="font-size:24px;font-weight:900;color:#FFE000;letter-spacing:1px;">LOCKER</div>
+    </div>
+    <!-- Illustrated pin + city decoration -->
+    <div style="position:absolute;right:10px;top:18px;font-size:72px;filter:drop-shadow(2px 6px 8px rgba(0,0,0,.3));line-height:1;">📍</div>
+    <!-- Small dot decorations -->
+    <div style="position:absolute;left:60%;top:50%;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.15);"></div>
+    <div style="position:absolute;left:70%;top:30%;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.1);"></div>
+  </div>
+
+  <!-- Info bar -->
+  <div class="ibar">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-size:17px;font-weight:900;color:#e8380d;">SPX</span>
+      <div style="width:1px;height:14px;background:#eee;"></div>
+      <img src="" alt="" style="display:none;"/>
+    </div>
+    <div class="locinfo">
+      <div>🏢 SPX Locker @ Galaxis, S138522 (Q2349-3)</div>
+      <div>📞 Customer Service: 99998888</div>
+    </div>
+  </div>
+
+  <div class="sbody" style="padding:16px 14px;">
+
+    <!-- Success row -->
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid #f0f0f0;">
+      <div style="width:28px;height:28px;border-radius:50%;background:#4caf50;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:1px;">✓</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#222;">Locker Retrieval Success</div>
+        <div style="font-size:12px;color:#aaa;margin-top:3px;">Locker retrieval is complete</div>
+      </div>
+    </div>
+
+    <!-- Pending section -->
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:#e8380d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px;">🕐</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#222;">Scan the parcel on driver's app</div>
+        <div style="font-size:12px;color:#777;margin-top:4px;line-height:1.6;">Before proceeding with delivery, scan all collected parcels via the SPX Driver APP</div>
+      </div>
+    </div>
+
+    <!-- Scan reminder shown as popup when Continue Delivery is tapped -->
+
+    <!-- Two phone screenshots -->
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <!-- Screenshot 1 - Retrieval list -->
+      <div style="flex:1;border:2px solid #333;border-radius:10px;overflow:hidden;font-size:9px;">
+        <div style="background:#f5f5f5;padding:5px 8px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-weight:700;font-size:10px;">← Retrieval</span>
+          <span style="color:#888;">⋮</span>
+        </div>
+        <div style="padding:7px;">
+          <div style="display:flex;text-align:center;margin-bottom:6px;border-bottom:1px solid #eee;padding-bottom:6px;">
+            <div style="flex:1;"><div style="font-size:16px;font-weight:700;">12</div><div style="color:#888;font-size:9px;">Pending</div></div>
+            <div style="flex:1;border-left:1px solid #eee;"><div style="font-size:16px;font-weight:700;">0</div><div style="color:#888;font-size:9px;">Retrieved</div></div>
+          </div>
+          <div style="color:#555;line-height:1.9;">
+            <div style="color:#333;">ID005314767472</div>
+            <div style="color:#333;">ID005314767472</div>
+            <div style="color:#333;">ID005314767472</div>
+            <div style="color:#333;">ID005314767472</div>
+            <div style="color:#333;">ID005314767472</div>
+          </div>
+          <div style="background:#e8380d;color:#fff;border-radius:5px;padding:5px;text-align:center;margin-top:6px;font-size:10px;font-weight:700;">📷 Scan to Retrieve</div>
+        </div>
+      </div>
+      <!-- Screenshot 2 - Scanner view -->
+      <div style="flex:1;border:2px solid #333;border-radius:10px;overflow:hidden;font-size:9px;">
+        <div style="background:#f5f5f5;padding:5px 8px;border-bottom:1px solid #ddd;">
+          <span style="font-size:10px;color:#888;">← Scan</span>
+        </div>
+        <div style="background:#111;height:80px;display:flex;align-items:center;justify-content:center;position:relative;">
+          <div style="border:2px solid #e8380d;width:60px;height:28px;border-radius:3px;position:relative;">
+            <div style="position:absolute;left:0;right:0;top:50%;height:1.5px;background:#e8380d;opacity:.7;"></div>
+          </div>
+          <div style="position:absolute;top:6px;right:6px;width:8px;height:8px;border-top:2px solid rgba(255,255,255,.5);border-right:2px solid rgba(255,255,255,.5);"></div>
+          <div style="position:absolute;top:6px;left:6px;width:8px;height:8px;border-top:2px solid rgba(255,255,255,.5);border-left:2px solid rgba(255,255,255,.5);"></div>
+        </div>
+        <div style="padding:7px;text-align:center;">
+          <div style="color:#888;margin-bottom:3px;font-size:9px;">0/24 Order</div>
+          <div style="font-size:18px;">📭</div>
+          <div style="color:#888;font-size:9px;">No Order</div>
+          <div style="background:#f5c6bc;color:#c0392b;border-radius:4px;padding:4px;margin-top:5px;font-size:9px;font-weight:700;">Finish Retrieval</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bbar two">
+    <button class="bgray" style="flex:1;" id="logoutP7Btn">Log Out</button>
+    <button class="bp dis" style="flex:2;" id="btnContinue">Continue Delivery (5s)</button>
+  </div>
+</div>
+
+<!-- PAGE 8 -->
+<div class="screen" id="p8">
+  <div class="banner short"><div class="sbar"><span>📍 QM52000027</span><span>Shopee Collection Point</span></div><div class="logo-area"><div class="logo-main">SPX<span class="logo-exp"> EXPRESS</span></div><div class="logo-sub">LOCKER</div></div><div class="pin">📍</div></div>
+  <div class="ibar"><span class="spxlogo">SPX</span><div class="locinfo"><div>🏢 SPX Locker @ Galaxis, S138522 (Q2349-3)</div><div>📞 Customer Service: 99998888</div></div></div>
+  <div class="sbody" style="padding-bottom:6px;">
+    <div class="deliv-row">Delivered: <span id="delivCnt">0</span></div>
+    <div class="scan-row">
+      <span style="font-size:17px;color:#bbb;">🗂</span>
+      <input id="tnInput" type="text" placeholder="Please scan / input SPXTN" readonly/>
+      <span id="tnClear" style="display:none;cursor:pointer;color:#bbb;font-size:18px;">✕</span>
+    </div>
+    <div style="padding:4px 14px 0;">
+      <button id="scanBarcodeBtn" class="bo" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;">
+        <span style="font-size:17px;">📷</span> Tap here to scan (Simulator)
+      </button>
+    </div>
+    <div id="scanStatus" class="scan-status"></div>
+    <div id="emptyState" class="empty-state">
+      <div class="es-label">Inbound Parcel</div>
+      <div class="es-bar"></div>
+      <div class="es-placeholder"><div class="es-box"></div><div class="es-lines"><div class="es-line" style="width:70%;"></div><div class="es-line" style="width:50%;"></div></div></div>
+    </div>
+    <div id="errMsg" style="display:none;color:#e8380d;font-size:12px;text-align:center;padding:6px 14px;"></div>
+    <div style="text-align:center;font-size:12px;color:#ccc;padding:4px 0;">Reopen Cell &nbsp;|&nbsp; Cannot Fit</div>
+  </div>
+  <div class="kbo" id="kbOverlay">
+    <div id="kbLetters">
+      <div class="krow">
+        <div class="kk" data-kb="Q">Q</div><div class="kk" data-kb="W">W</div><div class="kk" data-kb="E">E</div><div class="kk" data-kb="R">R</div><div class="kk" data-kb="T">T</div>
+        <div class="kk" data-kb="Y">Y</div><div class="kk" data-kb="U">U</div><div class="kk" data-kb="I">I</div><div class="kk" data-kb="O">O</div><div class="kk" data-kb="P">P</div>
+      </div>
+      <div class="krow">
+        <div class="kk" data-kb="A">A</div><div class="kk" data-kb="S">S</div><div class="kk" data-kb="D">D</div><div class="kk" data-kb="F">F</div><div class="kk" data-kb="G">G</div>
+        <div class="kk" data-kb="H">H</div><div class="kk" data-kb="J">J</div><div class="kk" data-kb="K">K</div><div class="kk" data-kb="L">L</div>
+      </div>
+      <div class="krow">
+        <div class="kk act" id="shiftKey">⇧</div>
+        <div class="kk" data-kbs="Z" id="kbZ">Z</div><div class="kk" data-kbs="X" id="kbX">X</div><div class="kk" data-kbs="C" id="kbC">C</div><div class="kk" data-kbs="V" id="kbV">V</div>
+        <div class="kk" data-kbs="B" id="kbB">B</div><div class="kk" data-kbs="N" id="kbN">N</div><div class="kk" data-kbs="M" id="kbM">M</div>
+        <div class="kk del" id="kbDelBtn">⌫</div>
+      </div>
+      <div class="krow">
+        <div class="kk act" id="kbShowNumBtn">123</div>
+        <div class="kk sp" id="kbSpaceLetters">space</div>
+        <div class="kk act" id="kbReturnLetters">return</div>
+      </div>
+    </div>
+    <div id="kbNumbers" style="display:none;">
+      <div class="krow">
+        <div class="kk" data-kb="1">1</div><div class="kk" data-kb="2">2</div><div class="kk" data-kb="3">3</div><div class="kk" data-kb="4">4</div><div class="kk" data-kb="5">5</div>
+        <div class="kk" data-kb="6">6</div><div class="kk" data-kb="7">7</div><div class="kk" data-kb="8">8</div><div class="kk" data-kb="9">9</div><div class="kk" data-kb="0">0</div>
+      </div>
+      <div class="krow">
+        <div class="kk" data-kb="-">-</div><div class="kk" data-kb="/">/</div><div class="kk" data-kb=":">:</div><div class="kk" data-kb="(">(</div><div class="kk" data-kb=")">)</div>
+        <div class="kk" data-kb="@">@</div><div class="kk" data-kb=".">.</div><div class="kk del" id="kbDelNum">⌫</div>
+      </div>
+      <div class="krow">
+        <div class="kk" data-kb="&">&amp;</div><div class="kk" data-kb=",">,</div><div class="kk" data-kb="?">?</div><div class="kk" data-kb="!">!</div>
+        <div class="kk" data-kb="#">#</div><div class="kk del" id="kbDelNum2">⌫</div>
+      </div>
+      <div class="krow">
+        <div class="kk act" id="kbShowLettersBtn">ABC</div>
+        <div class="kk sp" id="kbSpaceNums">space</div>
+        <div class="kk act" id="kbReturnNums">return</div>
+      </div>
+    </div>
+  </div>
+  <div class="sanim" id="scanAnim">
+    <div class="svp"><div class="sline"></div><div class="scorn tl"></div><div class="scorn tr"></div><div class="scorn bl"></div><div class="scorn br"></div>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);font-size:11px;text-align:center;">Point camera<br>at barcode</div>
+    </div>
+    <div style="color:#fff;margin-top:13px;font-size:14px;">Scanning parcel barcode...</div>
+    <button id="cancelScanBtn" style="margin-top:11px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:7px 20px;font-size:13px;cursor:pointer;">Cancel</button>
+  </div>
+  <div class="bbar two">
+    <button class="bgray" style="flex:1;" id="logoutP8Btn">Log Out</button>
+    <button class="bp dis" style="flex:2;" id="btnCompDeliv">Complete Delivery</button>
+  </div>
+</div>
+
+<!-- PAGE 10 -->
+<div class="screen" id="p10">
+  <div class="banner short"><div class="sbar"><span>📍 QM52000027</span><span>Shopee Collection Point</span></div><div class="logo-area"><div class="logo-main">SPX<span class="logo-exp"> EXPRESS</span></div><div class="logo-sub">LOCKER</div></div><div class="pin">📍</div></div>
+  <div class="ibar"><span class="spxlogo">SPX</span><div class="locinfo"><div>🏢 SPX Locker @ Galaxis, S138522 (Q2349-3)</div><div>📞 Customer Service: 99998888</div></div></div>
+  <div class="sbody" style="padding-bottom:8px;">
+    <div class="deliv-row">Delivered: <span id="delivCnt10">0</span></div>
+    <div class="scan-row">
+      <span style="font-size:17px;color:#bbb;">🗂</span>
+      <input type="text" readonly id="p10tn" style="font-size:14px;color:#222;border:none;outline:none;flex:1;background:transparent;"/>
+      <span id="p10xBtn" style="cursor:pointer;color:#bbb;font-size:18px;">✕</span>
+    </div>
+    <div class="deposit-section">
+      <div class="deposit-inbound-label">Inbound Parcel</div>
+      <div class="deposit-cell-id" id="p10cellLabel"></div>
+      <div class="deposit-row" id="p10cells"></div>
+    </div>
+    <div id="cancelHint" style="display:none;background:#fff3f0;border:1.5px solid #e8380d;border-radius:8px;padding:11px 13px;margin:8px 14px 0;font-size:12px;color:#e8380d;text-align:center;line-height:1.6;">
+      <b>⚠️ Parcel cannot fit.</b><br>Tap the <span style="background:#e8380d;color:#fff;border-radius:50%;padding:1px 7px;font-weight:700;">✕</span> button above to cancel this deposit and return the parcel to the hub.
+    </div>
+  </div>
+  <div class="bbar"><button class="bp" id="doneCloseBtn">Done &amp; Close All Door</button></div>
+</div>
+
+<!-- PAGE 11 -->
+<div class="screen" id="p11" style="background:#fff;justify-content:center;align-items:center;">
+  <div class="blackbox" id="blackBox">
+    <div style="color:#fff;text-align:center;"><div style="font-size:52px;margin-bottom:12px;">✅</div><div style="font-size:17px;font-weight:700;">Parcel Deposited Successfully</div></div>
+  </div>
+  <div id="p11content" style="text-align:center;padding:30px;display:none;">
+    <div style="font-size:52px;margin-bottom:12px;">✅</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:6px;">Deposit Confirmed!</div>
+    <div style="font-size:13px;color:#888;margin-bottom:8px;" id="p11sub"></div>
+    <div id="p11next"></div>
+  </div>
+</div>
+
+<!-- PAGE 12 -->
+<div class="screen" id="p12">
+  <div class="banner"><div class="sbar"><span>📍 QM52000027</span><span>Shopee Collection Point</span></div><div class="logo-area"><div class="logo-main">SPX<span class="logo-exp"> EXPRESS</span></div><div class="logo-sub">LOCKER</div></div><div class="pin">📍</div></div>
+  <div class="ibar"><span class="spxlogo">SPX</span><div class="locinfo"><div>🏢 SPX Locker @ Galaxis, S138522 (Q2349-3)</div><div>📞 Customer Service: 99998888</div></div></div>
+  <div class="sbody" style="padding:20px 14px;text-align:center;">
+    <div style="font-size:50px;margin-bottom:10px;">🎉</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px;">Delivery Complete!</div>
+    <div style="font-size:13px;color:#888;margin-bottom:14px;">All parcels have been successfully deposited.</div>
+    <div style="border:1.5px solid #eee;border-radius:10px;padding:13px;text-align:left;margin-bottom:14px;" id="summaryCard"></div>
+    <button class="bp" style="margin-bottom:9px;" id="takeAssessBtn">📝 Take Assessment →</button>
+    <button class="bo" style="width:100%;padding:13px;" id="exitFromP12Btn">↩ Exit Simulator</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="pQuiz">
+  <div style="background:#e8380d;padding:13px;flex-shrink:0;"><div style="color:#fff;font-size:15px;font-weight:700;">📝 Assessment</div><div style="color:rgba(255,255,255,.8);font-size:11px;margin-top:2px;">Scenario-based — no hints</div></div>
+  <div style="height:3px;background:#f0f0f0;flex-shrink:0;"><div id="quizProgress" style="height:3px;background:#e8380d;transition:width .3s;width:0%;"></div></div>
+  <div class="sbody" style="padding:14px;" id="quizBody"></div>
+</div>
+
+<!-- SCORE -->
+<div class="screen" id="pScore">
+  <div style="background:#e8380d;padding:13px;flex-shrink:0;"><div style="color:#fff;font-size:15px;font-weight:700;">📊 Results</div><div style="color:rgba(255,255,255,.8);font-size:11px;margin-top:2px;">SPX Locker Assessment</div></div>
+  <div class="sbody" style="padding:14px;" id="scoreBody"></div>
+</div>
+
+<!-- MODALS -->
+<div class="mbg" id="modalLogout"><div class="mbox"><h3>Log Out</h3><p>You have not completed the locker task.<br>Are you sure you want to log out?</p><div class="mbtns"><button class="ml" id="logoutBtn">Log Out (30s)</button><button class="mr" id="cancelLogoutBtn">Continue</button></div></div></div>
+<div class="maxup-overlay" id="maxupOverlay"><div class="maxup-card" id="maxupContent"></div></div>
+<div class="mbg" id="modalTraining">
+  <div class="mbox" style="padding:0;overflow:hidden;">
+    <div style="background:#e8380d;padding:18px 20px 14px;">
+      <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Before you start</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.8);">Here is what you will be doing in this training:</div>
+    </div>
+    <div style="padding:18px 20px;">
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#e8380d;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+          <div><div style="font-size:14px;font-weight:700;color:#222;margin-bottom:3px;">Retrieval</div><div style="font-size:12px;color:#666;line-height:1.6;">Open each locker area and collect all parcels from the compartments inside.</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#e8380d;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+          <div><div style="font-size:14px;font-weight:700;color:#222;margin-bottom:3px;">Deposit</div><div style="font-size:12px;color:#666;line-height:1.6;">Scan each parcel and place it into the assigned compartment. Close the door when done.</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#e8380d;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+          <div><div style="font-size:14px;font-weight:700;color:#222;margin-bottom:3px;">Quiz</div><div style="font-size:12px;color:#666;line-height:1.6;">Answer scenario questions to confirm your understanding. Pass mark is 80%.</div></div>
+        </div>
+      </div>
+      <div style="background:#fff8e1;border-left:3px solid #f9a825;border-radius:4px;padding:10px 12px;margin-bottom:18px;font-size:12px;color:#7d5000;line-height:1.6;">
+        <b>💡 Tip:</b> Follow the guide bar at the bottom of the screen at any time for step-by-step help.
+      </div>
+    </div>
+    <div class="mbtns"><button class="mc" id="trainingModalOKBtn" style="font-size:15px;font-weight:700;">I understand — Start Task</button></div>
+  </div>
+</div><div class="mbox"><h3>Log Out</h3><p>You have not completed the locker task.<br>Are you sure you want to log out?</p><div class="mbtns"><button class="ml" id="logoutBtn">Log Out (30s)</button><button class="mr" id="cancelLogoutBtn">Continue</button></div></div></div>
+<div class="mbg" id="modalOL"><div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;"><span style="font-size:15px;font-weight:700;">Order List</span><span id="closeOLBtn" style="cursor:pointer;font-size:20px;color:#888;">✕</span></div><div id="olContent"></div><div class="mbtns"><button class="mc" id="closeOLBtnBottom">Close</button></div></div></div>
+<div class="mbg" id="modalWrongTN"><div class="mbox"><h3>❌ TN Not Found</h3><p>This tracking number does not match any assigned parcel. Please re-scan the correct parcel.</p><div class="mbtns"><button class="mc" id="rescanBtn">Re-scan</button></div></div></div>
+<div class="mbg" id="modalConfirmRetrieval"><div class="mbox"><h3>Confirm</h3><p>There are still orders pending retrieval. Do you want to continue collecting these orders?</p><div class="mbtns"><button class="ml" id="skipRetrievalBtn">Skip</button><button class="mr" id="continueRetrievalBtn">Continue</button></div></div></div>
+<div class="maxup-overlay" id="maxupOverlay"><div class="maxup-card" id="maxupContent"></div></div>
+<div class="mbg" id="modalExit"><div class="mbox"><h3>Exit Simulator</h3><p>Return to the start screen?<br>All progress will be reset.</p><div class="mbtns"><button class="ml" id="cancelExitBtn">Cancel</button><button class="mr" id="doExitBtn">Exit</button></div></div></div>
+<div class="mbg" id="modalIncomplete"><div class="mbox"><h3>⚠️ Session Incomplete</h3><p id="incompleteMsg"></p><div class="mbtns"><button class="mc" id="incompleteExitBtn">Return to Start</button></div></div></div>
+
+<script>
+/* ════ CONSTANTS ════ */
+var SHEET_URL='https://script.google.com/macros/s/AKfycbyLYMIV8DogdVy2Sll5oPmfDaQb0uj4PBcIUBAakbbFdHxPlYxV_lLFvTbkY87i1ZT2EA/exec';
+var MAX_DEPOSITS = 3;
+var TN_POOL = [
+  {tn:'SG1234567890AB',upsize:0},
+  {tn:'SG9876543210CD',upsize:1},
+  {tn:'SG1122334455EF',upsize:2}
+];
+var AREAS = [
+  {id:'A',label:'A Area',pending:4,parcels:['A01','A03','A15','A16']},
+  {id:'B',label:'B Area',pending:4,parcels:['B02','B04','B06','B07']},
+  {id:'C',label:'C Area',pending:3,parcels:['C01','C03','C05']},
+  {id:'D',label:'D Area',pending:1,parcels:['D02']}
+];
+var UPSIZE = [
+  {label:'A09',       cells:['A09'],                  canUp:true},
+  {label:'A09 - A11', cells:['A09','A10','A11'],       canUp:true},
+  {label:'A09 - A12', cells:['A09','A10','A11','A12'], canUp:true},
+  {label:'B01 - B04', cells:['B01','B02','B03','B04'], canUp:false}
+];
+var QUIZ_BANK = [
+  {
+    sc:'You arrive at the locker.',
+    img:'Q1',imgLabel:'Before scanning the QR code',
+    q:'What should you do first?',
+    opts:[
+      'Scan the QR code',
+      'Open your Driver App and tap your assigned job',
+      'Open any locker door',
+      'Log out and log in again'
+    ],
+    correctText:'Open your Driver App and tap your assigned job',
+    exp:'You must open your Driver App and select your assigned job BEFORE scanning the QR code on the locker.'
+  },
+  {
+    sc:'The system tells you to deposit a parcel into A09.',
+    img:'Q2',imgLabel:'System assigned compartment',
+    q:'What should you do?',
+    opts:[
+      'Put the parcel into any empty compartment',
+      'Use the compartment closest to you',
+      'Put the parcel into A09',
+      'Ask another driver to choose for you'
+    ],
+    correctText:'Put the parcel into A09',
+    exp:'Always deposit into the system-assigned compartment only. Never use a different compartment even if it is empty or closer.'
+  },
+  {
+    sc:'The system tells you to deposit the parcel into A09. When you press "Open", you notice that A04 also opens at the same time.',
+    img:'Q3',imgLabel:'Multiple doors open',
+    q:'What should you do?',
+    opts:[
+      'Put the parcel into A04 because it is already open',
+      'Put the parcel into whichever compartment is bigger',
+      'Ask another driver which compartment to use',
+      'Put the parcel into A09 only'
+    ],
+    correctText:'Put the parcel into A09 only',
+    exp:'Even if other compartments open at the same time, you must only use the compartment the system assigned to you — A09.'
+  },
+  {
+    sc:'You put the parcel into the compartment. When you try to close the door, it cannot close properly.',
+    img:'Q4',imgLabel:'Door will not close',
+    q:'What should you do?',
+    opts:[
+      'Push harder until it closes',
+      'Mark the job as completed',
+      'Continue with the next parcel',
+      'Stop, take a photo and report the compartment number. Meanwhile, tap Upsize Cell to change to another compartment'
+    ],
+    correctText:'Stop, take a photo and report the compartment number. Meanwhile, tap Upsize Cell to change to another compartment',
+    exp:'If the door cannot close, stop immediately. Take a photo and report the compartment number. Then tap Upsize Cell to get a different compartment assigned for your parcel.'
+  },
+  {
+    sc:'You open the compartment to deposit your parcel. You see another parcel inside. The buyer details do not match your parcel.',
+    img:'Q5',imgLabel:'Another parcel already inside',
+    q:'What should you do?',
+    opts:[
+      'Put your parcel inside as well',
+      'Move the parcel to another compartment',
+      'Close the door and continue',
+      'Stop, take a photo of the parcel inside the compartment and report the problem'
+    ],
+    correctText:'Stop, take a photo of the parcel inside the compartment and report the problem',
+    exp:'Do not touch or move the existing parcel. Take a photo and report the problem to your supervisor immediately.'
+  },
+  {
+    sc:'You retrieve a parcel from the locker and close the compartment.',
+    img:'Q6',imgLabel:'Parcel retrieved',
+    q:'What should you do next?',
+    opts:[
+      'Put the parcel in your vehicle and continue working',
+      'Start another retrieval job',
+      'Put the parcel back into the locker',
+      'Scan the parcel in your Driver App to receive it'
+    ],
+    correctText:'Scan the parcel in your Driver App to receive it',
+    exp:'After retrieving, always scan the parcel in your Driver App straight away. This updates the parcel status and protects you from any losses.'
+  },
+  {
+    sc:'You try to fit a parcel into the locker. After upsizing, the parcel still cannot fit.',
+    img:'Q7',imgLabel:'Parcel cannot fit',
+    q:'What should you do?',
+    opts:[
+      'Force the parcel into the compartment',
+      'Leave the parcel beside the locker',
+      'Put it into any empty compartment',
+      'Tap the X button to cancel the deposit and bring the parcel back to the hub for relabel to home delivery'
+    ],
+    correctText:'Tap the X button to cancel the deposit and bring the parcel back to the hub for relabel to home delivery',
+    exp:'When the parcel cannot fit even after upsizing, tap the X button next to the tracking number to cancel the deposit. Bring the parcel back to the hub for relabel to home delivery.'
+  },
+  {
+    sc:'The system tells you to retrieve a parcel from B03. You open B03, but the parcel is not there.',
+    img:'Q8',imgLabel:'Parcel missing from compartment',
+    q:'What should you do?',
+    opts:[
+      'Mark retrieval as completed',
+      'Open random compartments to search for it',
+      'Skip the parcel and continue',
+      'Check carefully. If you still cannot find it, report the problem'
+    ],
+    correctText:'Check carefully. If you still cannot find it, report the problem',
+    exp:'Do not mark the retrieval as completed if the parcel is not there. Check carefully first, then report the problem to your supervisor if you still cannot find it.'
+  },
+  {
+    sc:'You have finished retrieving all parcels from the locker.',
+    img:'Q9',imgLabel:'Retrieval complete',
+    q:'What must you do before leaving?',
+    opts:[
+      'Drive off immediately',
+      'Send a message to your supervisor',
+      'Log out of the locker',
+      'Scan all retrieved parcels in your Driver App'
+    ],
+    correctText:'Scan all retrieved parcels in your Driver App',
+    exp:'Before leaving, scan every retrieved parcel in your Driver App. This updates the parcel status, prevents the customer from re-collecting it, and protects you from any losses.'
+  }
+];
+
+/* ════ STATE ════ */
+var DRIVER = {id:'',name:'',route:'',agency:''};
+var S = {};
+var p5WalkShown=false, p8WalkShown=false, p10WalkShown=false, quizTransitionShown=false;
+function resetState(){
+  clearInterval(S.qrInt); clearInterval(S.continueInt); clearInterval(S.logoutInt); clearTimeout(S.scanTmr); clearTimeout(S.logoTmr);
+  S = {mode:S.mode||'training',openedAreas:[],retrievedAreas:[],currentArea:null,
+       reopenCount:0,retrievalDone:false,upsizeStage:0,upsizeTotal:0,
+       delivCount:0,doorClosed:false,scenarioIdx:0,scenarioErrors:0,
+       logoTaps:0,logoTmr:null,qrInt:null,continueInt:null,logoutInt:null,scanTmr:null,
+       quizBank:[],quizIdx:0,quizMistakes:[],quizWrongThisQ:false,flowErrors:[],
+       sessionComplete:false,kbUpper:true,errorCount:0,_doorsOpen:{},
+       simStartTime:null,simEndTime:null,quizStartTime:null,quizEndTime:null};
+  p5WalkShown=false; p8WalkShown=false; p10WalkShown=false; quizTransitionShown=false;
+  preDoorsShown=false;
+}
+resetState();
+
+/* ════ HELPERS ════ */
+function $e(id){return document.getElementById(id);}
+function show(id,v){var e=$e(id);if(e)e.style.display=v?'block':'none';}
+function txt(id,t){var e=$e(id);if(e)e.textContent=t;}
+function html(id,h){var e=$e(id);if(e)e.innerHTML=h;}
+function addC(id,c){var e=$e(id);if(e)e.classList.add(c);}
+function remC(id,c){var e=$e(id);if(e)e.classList.remove(c);}
+function hasC(id,c){var e=$e(id);return e?e.classList.contains(c):false;}
+function setV(id,v){var e=$e(id);if(e)e.value=v;}
+function getV(id){var e=$e(id);return e?e.value:'';}
+
+var _tt;
+function toast(msg,dur){
+  dur=dur||2400; var t=$e('toast'); if(!t)return;
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(function(){t.classList.remove('show');},dur);
+}
+
+function goTo(pid){
+  /* Clear all timers to prevent any pending navigation */
+  clearInterval(S.qrInt); clearInterval(S.continueInt); clearInterval(S.logoutInt);
+  clearTimeout(S.scanTmr); clearTimeout(S.logoTmr);
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  addC(pid,'active'); hideKB();
+  var map={p1:iP1,p2:iP2,p4:iP4,p5:iP5,p6:iP6,p7:iP7,p8:iP8,p10:iP10,p11:iP11,p12:iP12,pQuiz:iQuiz};
+  if(map[pid]) map[pid]();
+}
+function showHint(id){/* hint strips removed — guide bar handles tips */}
+function openModal(id){var e=$e(id);if(e)e.classList.add('on');}
+function closeModal(id){var e=$e(id);if(e)e.classList.remove('on');}
+
+/* ════ REGISTRATION ════ */
+function checkReg(){
+  var ok=getV('regDriverID').trim()&&getV('regDriverName').trim()&&getV('regRoute').trim()&&getV('regAgency').trim();
+  if(ok) remC('regBtn','dis'); else addC('regBtn','dis');
+}
+function submitReg(){
+  var id=getV('regDriverID').trim(),name=getV('regDriverName').trim(),route=getV('regRoute').trim(),agency=getV('regAgency').trim();
+  if(!id||!name||!route||!agency){txt('regErr','Please fill in all fields.');return;}
+  if(!/^\d+$/.test(id)){txt('regErr','Driver ID must be numbers only.');return;}
+  DRIVER={id:id,name:name,route:route,agency:agency};
+  txt('regErr',''); txt('welcomeName',name); txt('welcomeSub','ID: '+id+' | Route: '+route+' | '+agency);
+  goTo('pMode');
+}
+
+/* ════ GOOGLE SHEETS SUBMISSION ════ */
+function submitToSheet(data){
+  if(!SHEET_URL) return;
+  /* Use no-cors fetch — response will be opaque but data still lands in Sheet */
+  try {
+    fetch(SHEET_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    }).catch(function(err){console.warn('Sheet submit error:',err);});
+  } catch(e){
+    console.warn('Sheet submit failed:',e);
+  }
+}
+
+/* ════ MODE SELECT ════ */
+function selectMode(m){
+  S.mode=m;
+  $e('btnTrain').classList.toggle('active',m==='training');
+  $e('btnTest').classList.toggle('active',m==='test');
+  txt('modeDesc',m==='training'?'Guided flow with step-by-step hints':'Scenario questions — no hints shown');
+}
+
+/* ════ PAGE 1 ════ */
+function iP1(){showHint('h1');S.logoTaps=0;txt('tapCount','');updateDots(0);}
+function updateDots(n){for(var i=1;i<=3;i++){var d=$e('dot'+i);if(!d)continue;d.style.background=i<=n?'#e8380d':'#eee';d.style.borderColor=i<=n?'#e8380d':'#ddd';}}
+function tapLogo(){
+  S.logoTaps++; updateDots(S.logoTaps); txt('tapCount',S.logoTaps<3?'Tap '+S.logoTaps+'/3':'');
+  clearTimeout(S.logoTmr);
+  if(S.logoTaps>=3){S.logoTaps=0;updateDots(0);txt('tapCount','');toast('✅ Driver mode unlocked!');setTimeout(function(){goTo('p2');},500);}
+  else S.logoTmr=setTimeout(function(){S.logoTaps=0;updateDots(0);txt('tapCount','');},2500);
+}
+
+/* ════ PAGE 2 ════ */
+function iP2(){
+  showHint('h2'); clearInterval(S.qrInt);
+  show('qrLoad',true); show('qrSvg',false); txt('cancelQRBtn','Cancel');
+  setTimeout(function(){
+    show('qrLoad',false); show('qrSvg',true);
+  },1500);
+}
+function doQRScan(){clearInterval(S.qrInt); goTo('p4');}
+function cancelQR(){clearInterval(S.qrInt); toast('Session cancelled'); goTo('p1');}
+
+/* ════ PAGE 4 ════ */
+function iP4(){
+  showHint('h4');
+  if(!S.simStartTime) S.simStartTime=Date.now();
+  setTimeout(function(){openModal('modalTraining');},300);
+}
+
+/* ════ PAGE 5 ════ */
+function iP5(){showHint('h5'); renderAreas();}
+function renderAreas(){
+  var c=$e('areaList'); if(!c)return; c.innerHTML='';
+  AREAS.forEach(function(a){
+    var opened=S.openedAreas.indexOf(a.id)>=0;
+    var retrieved=S.retrievedAreas.indexOf(a.id)>=0;
+    var d=document.createElement('div'); d.className='acard'+(opened?' opened':'');
+    d.innerHTML='<div><div class="acard-name'+(opened?' grey':'')+'">'+a.label+'</div>'+
+      '<div class="acard-count">Pending Retrieve: '+a.pending+'</div>'+
+      (retrieved?'<div style="font-size:10px;color:#aaa;margin-top:2px;">Retrieved ✓</div>':'')+
+      '</div><button class="acard-btn'+(opened?' grey':'')+'" data-area="'+a.id+'">'+
+      (opened?'Reopen':'Open')+'</button>';
+    d.querySelector('button').addEventListener('click',function(){openArea(a.id);});
+    c.appendChild(d);
+  });
+}
+function openArea(id){
+  if(S.openedAreas.indexOf(id)>=0) S.reopenCount++; else S.openedAreas.push(id);
+  S.currentArea=id;
+  var area=AREAS.filter(function(a){return a.id===id;})[0]; if(!area)return;
+  var slot=TN_POOL[S.delivCount%TN_POOL.length];
+  html('olContent','<div style="font-size:12px;color:#888;margin-bottom:10px;">Parcels for <strong>'+area.label+'</strong></div>'+
+    area.parcels.map(function(p){return '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;"><span style="background:#f0f0f0;border-radius:5px;padding:3px 9px;font-weight:700;font-size:12px;">'+p+'</span><span style="font-size:12px;color:#555;font-family:monospace;">'+slot.tn+'</span></div>';}).join(''));
+  showDoorsAnimation(area);
+}
+function doCompleteRetrieval(){
+  if(!AREAS.every(function(a){return S.openedAreas.indexOf(a.id)>=0;})) openModal('modalConfirmRetrieval');
+  else proceedRetrieval();
+}
+function proceedRetrieval(){S.retrievalDone=true; goTo('p7');}
+
+/* ════ DOORS ANIMATION ════ */
+function showDoorsAnimation(area){
+  var overlay=$e('doorsOverlay'); if(!overlay)return;
+  var bank=$e('lockerBank'); if(!bank)return;
+  bank.innerHTML=''; S._doorsOpen={};
+  txt('doorsTitle','🔓 '+area.label+' — '+area.parcels.length+' compartments opening');
+  /* Add/update View TN link inside doors card */
+  var existingTN=$e('doorsTNLink');
+  if(!existingTN){
+    var tnRow=document.createElement('div');
+    tnRow.style.cssText='display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border-radius:6px;padding:6px 10px;margin-bottom:4px;cursor:pointer;';
+    tnRow.innerHTML='<span style="font-size:11px;color:rgba(255,255,255,.7);">Check your assigned parcels:</span><span id="doorsTNLink" style="font-size:12px;color:#FFE000;font-weight:700;text-decoration:underline;">View TN List</span>';
+    tnRow.addEventListener('click',function(){openModal('modalOL');});
+    var doorsCard=$e('doorsOverlay').querySelector('.doors-card');
+    if(doorsCard) doorsCard.insertBefore(tnRow, doorsCard.querySelector('.locker-bank'));
+  }
+  txt('doorsSub','Watch the doors open, then tap each one to collect the parcel inside');
+  remC('doorsContinueBtn','show');
+  area.parcels.forEach(function(cellId){
+    var unit=document.createElement('div'); unit.className='locker-unit';
+    var ld=document.createElement('div'); ld.className='ld'; ld.id='ld_'+cellId;
+    var back=document.createElement('div'); back.className='ld-back';
+    var parcel=document.createElement('div'); parcel.className='ld-parcel'; parcel.id='lp_'+cellId; parcel.textContent='📦';
+    back.appendChild(parcel);
+    var door=document.createElement('div'); door.className='ld-door'; door.id='ldd_'+cellId;
+    var lbl=document.createElement('div'); lbl.className='ld-door-lbl'; lbl.textContent=cellId;
+    var handle=document.createElement('div'); handle.className='ld-door-handle';
+    var line=document.createElement('div'); line.className='ld-door-line';
+    door.appendChild(lbl); door.appendChild(handle); door.appendChild(line);
+    ld.appendChild(back); ld.appendChild(door);
+    ld.addEventListener('click',(function(cid){return function(){tapDoor(cid);};})(cellId));
+    var chip=document.createElement('div'); chip.className='ld-chip'; chip.id='lchip_'+cellId; chip.textContent='Pending';
+    unit.appendChild(ld); unit.appendChild(chip);
+    bank.appendChild(unit);
+  });
+  overlay.classList.add('on');
+  area.parcels.forEach(function(cellId,i){
+    setTimeout(function(){
+      var door=$e('ldd_'+cellId); if(door) door.style.transform='rotateY(-95deg)';
+      setTimeout(function(){var p=$e('lp_'+cellId); if(p){p.style.opacity='1';p.style.transform='scale(1)';}},300);
+    },i*220+400);
+  });
+  setTimeout(function(){txt('doorsSub','All doors open! Tap each one to collect, then tap again to close.');},area.parcels.length*220+900);
+}
+function tapDoor(cellId){
+  if(S._doorsOpen[cellId])return;
+  var door=$e('ldd_'+cellId); if(!door)return;
+  if(door.style.transform.indexOf('-95deg')<0)return;
+  door.style.transform='rotateY(0deg)';
+  var p=$e('lp_'+cellId); if(p){p.style.opacity='0';p.style.transform='scale(.5)';}
+  var chip=$e('lchip_'+cellId); if(chip){chip.textContent='✓ Retrieved';chip.className='ld-chip done';}
+  S._doorsOpen[cellId]=true;
+  var area=AREAS.filter(function(a){return a.id===S.currentArea;})[0]; if(!area)return;
+  var allDone=area.parcels.every(function(id){return S._doorsOpen[id];});
+  if(allDone){txt('doorsSub','All parcels collected! Tap below to continue.');addC('doorsContinueBtn','show');}
+}
+function finishDoorAnim(){
+  var overlay=$e('doorsOverlay'); if(overlay) overlay.classList.remove('on');
+  if(S.retrievedAreas.indexOf(S.currentArea)<0) S.retrievedAreas.push(S.currentArea);
+  goTo('p5');
+}
+
+/* ════ PAGE 6 ════ */
+function iP6(){
+  showHint('h6');
+  var area=AREAS.filter(function(a){return a.id===S.currentArea;})[0]; if(!area)return;
+  html('mapTitle','<span style="color:#e8380d;">'+area.label+'</span> — <span style="color:#e8380d;">'+area.pending+' parcel(s)</span> to retrieve');
+  html('p6body','<div style="text-align:center;padding:30px 14px;color:#888;font-size:13px;">Use the <b>Open</b> button on the previous screen to start retrieval.</div>');
+}
+
+/* ════ PAGE 7 ════ */
+function iP7(){
+  showHint('h7'); clearInterval(S.continueInt);
+  var sec=5; addC('btnContinue','dis'); txt('btnContinue','Continue Delivery ('+sec+'s)');
+  S.continueInt=setInterval(function(){sec--; txt('btnContinue',sec>0?'Continue Delivery ('+sec+'s)':'Continue Delivery'); if(sec<=0){clearInterval(S.continueInt);remC('btnContinue','dis');}},1000);
+}
+
+/* ════ PAGE 8 ════ */
+function getCurrentSlot(){return TN_POOL[S.delivCount%TN_POOL.length];}
+function iP8(){
+  showHint('h8'); var slot=getCurrentSlot(); S.upsizeStage=slot.upsize; S.doorClosed=false;
+  setV('tnInput',''); show('tnClear',false); show('emptyState',true); show('errMsg',false);
+  var ss=$e('scanStatus'); if(ss){ss.style.cssText='';ss.textContent='';}
+  txt('delivCnt',S.delivCount);
+  var h8=$e('h8'); if(h8) h8.innerHTML='<b>💡</b> To simulate scanning a parcel, tap the <b>Simulate Barcode Scan</b> button below.';
+  if(S.delivCount>=MAX_DEPOSITS) remC('btnCompDeliv','dis'); else addC('btnCompDeliv','dis');
+  kbShowLetters(); remC('kbOverlay','on');
+}
+function showKB(){kbShowLetters(); addC('kbOverlay','on');}
+function hideKB(){remC('kbOverlay','on');}
+function kbShowLetters(){show('kbLetters',true); show('kbNumbers',false);}
+function kbShowNum(){show('kbLetters',false); show('kbNumbers',true);}
+function kbShift(){
+  S.kbUpper=!S.kbUpper;
+  var sk=$e('shiftKey'); if(sk) sk.style.background=S.kbUpper?'#555':'#8e9299';
+  ['Z','X','C','V','B','N','M'].forEach(function(ch){var e=$e('kb'+ch); if(e) e.textContent=S.kbUpper?ch:ch.toLowerCase();});
+}
+function kbType(ch){var i=$e('tnInput'); if(!i)return; i.value+=ch; show('tnClear',true);}
+function kbTypeShift(ch){var i=$e('tnInput'); if(!i)return; i.value+=S.kbUpper?ch.toUpperCase():ch.toLowerCase(); show('tnClear',true);}
+function kbDel(){var i=$e('tnInput'); if(!i)return; i.value=i.value.slice(0,-1); show('tnClear',i.value.length>0);}
+
+function clearTN(){setV('tnInput',''); show('tnClear',false); show('emptyState',true); show('errMsg',false); var ss=$e('scanStatus'); if(ss){ss.style.cssText='';ss.textContent='';} S.upsizeStage=0;}
+function submitTN(){
+  var v=getV('tnInput').trim().toUpperCase(); if(!v)return;
+  var slot=getCurrentSlot();
+  if(v===slot.tn){
+    var ss=$e('scanStatus'); if(ss){ss.style.cssText='min-height:28px;padding:7px 14px;font-size:13px;text-align:center;font-weight:700;color:#4caf50;';ss.textContent='✓ TN Verified';}
+    show('errMsg',false); show('emptyState',false); S.upsizeStage=slot.upsize;
+    setTimeout(function(){goTo('p10');},600);
+  } else {
+    S.errorCount++;
+    show('errMsg',true); txt('errMsg','❌ TN not found. Please re-scan the correct parcel.'); openModal('modalWrongTN');
+  }
+}
+var _st;
+function startScan(){
+  addC('scanAnim','on'); var slot=getCurrentSlot(); var useWrong=S.mode==='test'&&Math.random()<0.25;
+  _st=setTimeout(function(){remC('scanAnim','on'); var i=$e('tnInput'); if(i){i.value=useWrong?'SG9999999999ZZ':slot.tn; show('tnClear',true);} setTimeout(submitTN,300);},2000);
+}
+function cancelScan(){clearTimeout(_st); remC('scanAnim','on');}
+
+/* ════ PAGE 10 ════ */
+/* isForceUpsize: true when this is the 3rd deposit (delivCount===2) in training mode */
+function isForceUpsize(){return S.mode==='training' && S.delivCount===2;}
+
+function iP10(){
+  S.doorClosed=false; txt('delivCnt10',S.delivCount); var slot=getCurrentSlot(); setV('p10tn',slot.tn);
+  /* For forced upsize (3rd deposit, training), always start at stage 0 regardless of slot.upsize */
+  if(isForceUpsize()) S.upsizeStage=0; else S.upsizeStage=slot.upsize;
+  var h10=$e('h10'); if(h10) h10.style.display='none'; /* hide default hint; we use inline prompts */
+  show('cancelHint',false); var xBtn=$e('p10xBtn'); if(xBtn) xBtn.classList.remove('x-pulse');
+  renderP10Panel();
+}
+
+function renderP10Panel(){
+  var stage=UPSIZE[S.upsizeStage]; txt('p10cellLabel',stage.label);
+  var cont=$e('p10cells'); if(!cont)return; cont.innerHTML='';
+
+  /* ── forced upsize mode ─────────────────────────────────── */
+  var forced=isForceUpsize();
+  var isMaxStage=!stage.canUp; /* true at B01-B04 */
+
+  /* Inline prompt strip above cells */
+  var promptEl=$e('cancelHint');
+  if(forced && !isMaxStage){
+    /* Show "parcel too big, upsize" banner */
+    if(promptEl){
+      promptEl.style.display='block';
+      promptEl.style.cssText='display:block;background:#fff3e0;border:1.5px solid #ff9800;border-radius:8px;padding:11px 13px;margin:8px 14px 0;font-size:12px;color:#e65100;text-align:center;line-height:1.6;';
+      promptEl.innerHTML='<b>📦 Parcel is too big for '+stage.label+'.</b><br>Tap <b>Upsize Cell</b> to try a larger compartment.';
+    }
+  } else if(forced && isMaxStage){
+    if(promptEl){
+      promptEl.style.display='block';
+      promptEl.style.cssText='display:block;background:#fff3f0;border:1.5px solid #e8380d;border-radius:8px;padding:11px 13px;margin:8px 14px 0;font-size:12px;color:#e8380d;text-align:center;line-height:1.6;';
+      promptEl.innerHTML='<b>⚠️ Maximum size reached. Parcel still cannot fit.</b><br>You must cancel this deposit. Tap the <b>✕</b> button above.';
+    }
+  } else {
+    show('cancelHint',false);
+  }
+
+  /* Cell column */
+  var wrap=document.createElement('div'); wrap.className='cell-col-wrap';
+  var col=document.createElement('div'); col.className=stage.cells.length>1?'cell-col multi':'cell-col';
+  stage.cells.forEach(function(id){var b=document.createElement('div'); b.className='cell-box'; b.textContent=id; col.appendChild(b);});
+  wrap.appendChild(col);
+
+  /* Status + buttons */
+  var right=document.createElement('div'); right.className='status-col';
+  var sl=document.createElement('div'); sl.className='status-line';
+  sl.innerHTML='<span class="status-dot">● '+stage.label+'</span> Opened: Please inbound parcel.';
+  right.appendChild(sl);
+  var brow=document.createElement('div'); brow.className='cell-btns';
+
+  /* Upsize button */
+  var ub=document.createElement('button');
+  if(forced && !isMaxStage){
+    /* Active and highlighted — this is the only valid action */
+    ub.className='cell-btn-active';
+    ub.textContent='Upsize Cell';
+    ub.style.cssText='flex:1;border:2px solid #e8380d;border-radius:6px;padding:9px 6px;font-size:13px;font-weight:700;color:#fff;background:#e8380d;cursor:pointer;animation:xpulse 1s ease-in-out infinite;';
+    ub.addEventListener('click',doUpsizeP10);
+  } else if(stage.canUp && !forced){
+    ub.className='cell-btn-active'; ub.textContent='Upsize Cell'; ub.addEventListener('click',doUpsizeP10);
+  } else {
+    ub.className='cell-btn-disabled'; ub.textContent='Upsize Cell'; ub.disabled=true;
+  }
+  brow.appendChild(ub);
+
+  /* Reopen Cell button */
+  var rb=document.createElement('button');
+  if(forced){
+    /* Disabled during forced flow */
+    rb.className='cell-btn-disabled'; rb.textContent='Reopen Cell'; rb.disabled=true;
+  } else {
+    rb.className='cell-btn-active'; rb.textContent='Reopen Cell';
+    rb.addEventListener('click',function(){toast('Cell reopened. Please close and retry deposit.');});
+  }
+  brow.appendChild(rb);
+  right.appendChild(brow); cont.appendChild(wrap); cont.appendChild(right);
+
+  /* Done & Close button styling */
+  var dcBtn=$e('doneCloseBtn');
+  if(dcBtn){
+    if(forced && !isMaxStage){
+      /* Faded orange — visible but unclickable */
+      dcBtn.style.cssText='background:#f5a990;color:#fff;border:none;border-radius:8px;padding:15px;font-size:16px;font-weight:600;width:100%;cursor:not-allowed;pointer-events:none;';
+    } else if(forced && isMaxStage){
+      /* Even more faded at max — must use ✕ */
+      dcBtn.style.cssText='background:#f5c4b8;color:#fff;border:none;border-radius:8px;padding:15px;font-size:16px;font-weight:600;width:100%;cursor:not-allowed;pointer-events:none;';
+    } else {
+      /* Normal */
+      dcBtn.style.cssText='';
+    }
+  }
+
+  /* ✕ button pulsing only at max stage forced */
+  var xBtn=$e('p10xBtn');
+  if(forced && isMaxStage){
+    if(xBtn) xBtn.classList.add('x-pulse');
+  } else {
+    if(xBtn) xBtn.classList.remove('x-pulse');
+  }
+}
+
+function cancelDepositFromP10(){
+  S.upsizeStage=0; S.upsizeTotal=0;
+  /* Reset Done & Close button style */
+  var dcBtn=$e('doneCloseBtn'); if(dcBtn) dcBtn.style.cssText='';
+  clearTN();
+
+  /* If this was the forced upsize training flow (3rd deposit), show a success modal then proceed to summary */
+  if(isForceUpsize()){
+    showForcedCancelSuccess();
+    return;
+  }
+  goTo('p8');
+  if(S.mode==='training') setTimeout(function(){toast('✅ Correct! Deposit cancelled. TN cleared.',2800);},300);
+}
+
+function showForcedCancelSuccess(){
+  /* Show a full-screen well-done overlay before proceeding to p12 */
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:absolute;inset:0;background:rgba(0,0,0,.75);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;';
+  overlay.innerHTML='<div style="background:#fff;border-radius:18px;padding:24px 20px;width:100%;text-align:center;">'+
+    '<div style="font-size:52px;margin-bottom:10px;">🎉</div>'+
+    '<div style="font-size:17px;font-weight:700;color:#222;margin-bottom:8px;">Well Done!</div>'+
+    '<div style="font-size:13px;color:#555;line-height:1.7;margin-bottom:16px;">'+
+      'You correctly cancelled the deposit using the <b style="color:#e8380d;">✕</b> button.<br><br>'+
+      'When a parcel cannot fit even after maximum upsize, always tap <b>✕ beside the SPXTN field</b> to cancel and return the parcel to the hub.'+
+    '</div>'+
+    '<div style="background:#fff8e1;border-left:3px solid #f9a825;border-radius:6px;padding:10px 12px;text-align:left;font-size:12px;color:#7d5000;margin-bottom:18px;line-height:1.6;">'+
+      '<b>💡 Key Takeaway:</b> Never force a parcel in or leave it at the locker. The ✕ button is your cancel action.'+
+    '</div>'+
+    '<button id="forcedCancelOKBtn" style="background:#e8380d;color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:700;width:100%;cursor:pointer;">Got it — Continue →</button>'+
+  '</div>';
+  var app=$e('app'); if(app) app.appendChild(overlay);
+  var okBtn=overlay.querySelector('#forcedCancelOKBtn');
+  if(okBtn) okBtn.addEventListener('click',function(){
+    if(overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    /* Mark 3rd deposit as done (cancelled = correct outcome) and go to summary */
+    S.delivCount=MAX_DEPOSITS;
+    goTo('p12');
+  });
+}
+
+function doUpsizeP10(){
+  if(S.upsizeStage>=UPSIZE.length-1){return;} /* at max, upsize btn is disabled */
+  S.upsizeStage++; S.upsizeTotal++;
+  var label=UPSIZE[S.upsizeStage].label;
+  if(isForceUpsize()){
+    toast('📦 Still too big! Trying '+label+'…');
+  } else {
+    toast('Upsize #'+S.upsizeTotal+': '+label);
+  }
+  renderP10Panel();
+}
+
+function showMaxUpsizePrompt(){} /* no longer used — flow handled inline */
+
+var MAXUP_WRONG={1:'Forcing damages the locker and risks parcel safety.',2:'Leaving unattended causes loss and SOP violation.',3:'Only system-assigned compartments. Random cells cause tracking errors.'};
+function styleSelOpt(id,ok){
+  var e=$e(id); if(!e)return;
+  e.style.background=ok?'#e8f5e9':'#fff5f3'; e.style.borderColor=ok?'#4caf50':'#e8380d'; e.style.color=ok?'#2e7d32':'#c62828';
+  var r=e.querySelector('.radio'); if(r){r.style.borderColor=ok?'#4caf50':'#e8380d'; r.style.background=ok?'#4caf50':'#e8380d';}
+}
+function answerMaxUpsize(chosen){
+  for(var i=0;i<4;i++){var e=$e('mup_'+i); if(e) e.style.pointerEvents='none';}
+  var ok=chosen===0; styleSelOpt('mup_0',true);
+  if(!ok){styleSelOpt('mup_'+chosen,false);}
+  var c=$e('maxupContent');
+  var fb=document.createElement('div'); fb.style.cssText='border-left:4px solid '+(ok?'#4caf50':'#e8380d')+';background:'+(ok?'#f0fff0':'#fff5f3')+';border-radius:6px;padding:9px;margin:10px 0;font-size:12px;color:'+(ok?'#2e7d32':'#c62828')+';line-height:1.5;';
+  fb.innerHTML='<strong>'+(ok?'✅ Correct!':'❌ Incorrect.')+'</strong> '+(ok?'Tap ✕ on the SPXTN field to cancel and return the parcel to the hub.':MAXUP_WRONG[chosen]);
+  c.appendChild(fb);
+  var btn=document.createElement('button'); btn.className='bp'; btn.style.cssText='margin-top:10px;margin-bottom:14px;';
+  if(ok){btn.textContent='↩ Cancel Deposit'; btn.addEventListener('click',function(){remC('maxupOverlay','on'); cancelDepositFromP10();});}
+  else{btn.textContent='Try Again'; btn.addEventListener('click',function(){remC('maxupOverlay','on'); showMaxUpsizePrompt();});}
+  c.appendChild(btn);
+}
+function doneAndClose(){
+  /* Block if forced upsize flow is active (3rd deposit, training) */
+  if(isForceUpsize()){
+    var stage=UPSIZE[S.upsizeStage];
+    if(!stage.canUp){
+      toast('⚠️ Parcel cannot fit! Tap ✕ to cancel deposit.',2500);
+    } else {
+      toast('⚠️ Parcel is too big! Tap Upsize Cell first.',2500);
+    }
+    return;
+  }
+  S.doorClosed=true; S.delivCount++; S.scenarioIdx++; goTo('p11');
+}
+
+/* ════ PAGE 11 ════ */
+function iP11(){
+  var bb=$e('blackBox'),ct=$e('p11content');
+  if(bb) bb.classList.add('on'); if(ct) ct.style.display='none';
+  setTimeout(function(){
+    if(bb) bb.classList.remove('on'); if(ct) ct.style.display='block';
+    var h11=$e('h11'); if(h11) h11.style.display=S.mode==='training'?'block':'none';
+    buildP11Next();
+  },1000);
+}
+function buildP11Next(){
+  var sub=$e('p11sub'),next=$e('p11next'); if(!sub||!next)return;
+  var remaining=MAX_DEPOSITS-S.delivCount;
+  if(remaining>0){
+    sub.textContent='Parcel '+S.delivCount+' of '+MAX_DEPOSITS+' deposited. '+remaining+' more to go.';
+    next.innerHTML='';
+    var btn=document.createElement('button'); btn.className='bp'; btn.textContent='Deposit Next Parcel →';
+    btn.addEventListener('click',function(){goTo('p8');});
+    next.appendChild(btn);
+  } else {
+    sub.textContent='All '+MAX_DEPOSITS+' parcels deposited!';
+    next.innerHTML='';
+    var btn=document.createElement('button'); btn.className='bp'; btn.textContent='View Summary →';
+    btn.addEventListener('click',function(){goTo('p12');});
+    next.appendChild(btn);
+  }
+}
+
+/* ════ PAGE 12 ════ */
+function iP12(){
+  S.sessionComplete=true;
+  S.simEndTime=Date.now();
+  html('summaryCard','<div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;">Session Summary</div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Driver</span><span style="font-weight:600;">'+DRIVER.name+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Route</span><span style="font-weight:600;">'+DRIVER.route+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Parcels Delivered</span><span style="font-weight:600;color:#4caf50;">'+Math.min(S.delivCount,MAX_DEPOSITS)+' / '+MAX_DEPOSITS+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;"><span style="color:#888;">Mode</span><span style="font-weight:600;">'+S.mode+'</span></div>');
+}
+
+/* ════ QUIZ ════ */
+function shuffleOpts(q){
+  /* Create shuffled index array, track where correct answer ends up */
+  var indices=[0,1,2,3];
+  for(var i=indices.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=indices[i];indices[i]=indices[j];indices[j]=tmp;}
+  var shuffledOpts=indices.map(function(i){return q.opts[i];});
+  var correctIdx=shuffledOpts.indexOf(q.correctText);
+  return {opts:shuffledOpts,ans:correctIdx};
+}
+
+function iQuiz(){
+  S.quizStartTime=Date.now();
+  /* Shuffle question order */
+  var bank=QUIZ_BANK.slice();
+  for(var i=bank.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=bank[i];bank[i]=bank[j];bank[j]=tmp;}
+  /* For each question, pre-shuffle its options */
+  S.quizBank=bank.map(function(q){
+    var s=shuffleOpts(q);
+    return {sc:q.sc,img:q.img,imgLabel:q.imgLabel,q:q.q,opts:s.opts,ans:s.ans,exp:q.exp,correctText:q.correctText};
+  });
+  S.quizIdx=0; S.quizMistakes=[]; S.quizWrongThisQ=false;
+  renderQuizQ();
+}
+
+function renderQuizQ(){
+  var body=$e('quizBody'); if(!body)return;
+  var prog=$e('quizProgress'); if(prog) prog.style.width=((S.quizIdx/S.quizBank.length)*100)+'%';
+  if(S.quizIdx>=S.quizBank.length){showScore();return;}
+  var q=S.quizBank[S.quizIdx];
+  S.quizWrongThisQ=false;
+  var currentQIdx=S.quizIdx; /* snapshot — used to guard stale clicks */
+
+  /* Simple situation label (no emoji) */
+  var imgCard='<div style="background:var(--color-background-secondary,#f5f5f5);border:1.5px solid #ddd;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">'+
+    '<div style="background:#e8380d;color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap;">'+q.img+'</div>'+
+    '<div style="font-size:12px;font-weight:600;color:#555;">'+q.imgLabel+'</div>'+
+  '</div>';
+
+  body.innerHTML=
+    '<div style="font-size:12px;color:#888;margin-bottom:10px;">Question '+(S.quizIdx+1)+' of '+S.quizBank.length+'</div>'+
+    imgCard+
+    '<div style="background:#e3f2fd;border-radius:8px;padding:10px 13px;margin-bottom:11px;font-size:12px;color:#1565c0;line-height:1.5;">'+q.sc+'</div>'+
+    '<div style="font-size:14px;font-weight:700;color:#222;margin-bottom:12px;">'+q.q+'</div>'+
+    q.opts.map(function(o,i){return '<div class="sel-opt" id="qopt_'+i+'"><div class="radio"></div>'+o+'</div>';}).join('');
+
+  q.opts.forEach(function(_,i){
+    var e=$e('qopt_'+i);
+    if(e) e.addEventListener('click',(function(idx,qIdx){return function(){answerQuiz(idx,qIdx);};})(i,currentQIdx));
+  });
+}
+
+function answerQuiz(chosen, qIdx){
+  /* Guard: ignore clicks that belong to a previous question */
+  if(qIdx !== S.quizIdx) return;
+  var q=S.quizBank[S.quizIdx];
+  var ok=chosen===q.ans;
+
+  if(ok){
+    /* Lock all options */
+    for(var i=0;i<q.opts.length;i++){
+      var e=$e('qopt_'+i);
+      if(e){e.style.pointerEvents='none'; e.onclick=null;}
+    }
+    styleSelOpt('qopt_'+q.ans,true);
+    /* Remove try-again strip if present */
+    var existing=$e('quizTryAgain'); if(existing) existing.remove();
+    var body=$e('quizBody'); if(!body)return;
+    var fb=document.createElement('div');
+    fb.style.cssText='border-left:4px solid #4caf50;background:#f0fff0;border-radius:0 6px 6px 0;padding:10px 12px;margin:10px 0;font-size:12px;color:#2e7d32;line-height:1.6;';
+    fb.innerHTML='<strong>Correct!</strong> '+q.exp;
+    body.appendChild(fb);
+    var nb=document.createElement('button'); nb.className='bp'; nb.style.marginTop='12px';
+    nb.textContent=S.quizIdx+1<S.quizBank.length?'Next Question':'View Results';
+    nb.addEventListener('click',function(){S.quizIdx++; renderQuizQ();});
+    body.appendChild(nb);
+  } else {
+    /* Record mistake only once per question */
+    if(!S.quizWrongThisQ){
+      S.quizWrongThisQ=true;
+      if(S.quizMistakes.indexOf(q)<0) S.quizMistakes.push(q);
+    }
+    /* Flash wrong option red then reset */
+    var wrongEl=$e('qopt_'+chosen);
+    if(wrongEl){
+      wrongEl.style.background='#fff0f0';
+      wrongEl.style.borderColor='#e8380d';
+      wrongEl.style.color='#c62828';
+      wrongEl.style.pointerEvents='none'; /* block re-click during flash */
+      setTimeout(function(){
+        if(wrongEl){
+          wrongEl.style.background='';
+          wrongEl.style.borderColor='#e8380d';
+          wrongEl.style.color='#e8380d';
+          wrongEl.style.pointerEvents='none'; /* keep disabled — can't pick same wrong again */
+        }
+      },700);
+    }
+    /* Show try-again strip only once */
+    if(!$e('quizTryAgain')){
+      var body=$e('quizBody'); if(!body)return;
+      var strip=document.createElement('div');
+      strip.id='quizTryAgain';
+      strip.style.cssText='background:#fff3e0;border-left:4px solid #ff9800;border-radius:0 6px 6px 0;padding:9px 12px;margin:10px 0;font-size:12px;color:#e65100;line-height:1.5;';
+      strip.innerHTML='<strong>Not quite.</strong> Read the options again and try a different answer.';
+      body.appendChild(strip);
+    }
+  }
+}
+
+function showScore(){
+  var prog=$e('quizProgress'); if(prog) prog.style.width='100%';
+  S.quizEndTime=Date.now();
+  goTo('pScore');
+
+  /* Calculate durations */
+  function minsElapsed(start, end){
+    if(!start||!end) return '';
+    return (Math.round((end-start)/6000)/10).toFixed(1);
+  }
+  var simDur=minsElapsed(S.simStartTime, S.simEndTime);
+  var quizDur=minsElapsed(S.quizStartTime, S.quizEndTime);
+  var totalDur=minsElapsed(S.simStartTime, S.quizEndTime);
+
+  /* Count questions answered correctly on first try */
+  var firstTryCorrect=S.quizBank.length-S.quizMistakes.length;
+  var wrongTopics=S.quizMistakes.map(function(m){return m.imgLabel||m.img||'';}).join(', ');
+
+  /* Submit to Google Sheets */
+  submitToSheet({
+    driverName:  DRIVER.name,
+    driverID:    DRIVER.id,
+    route:       DRIVER.route,
+    agency:      DRIVER.agency,
+    mode:        S.mode,
+    score:       firstTryCorrect+'/'+S.quizBank.length,
+    totalQ:      S.quizBank.length,
+    wrongTopics: wrongTopics||'None',
+    completed:   'Yes',
+    simDuration:  simDur,
+    quizDuration: quizDur,
+    totalDuration:totalDur
+  });
+
+  var body=$e('scoreBody'); if(!body)return;
+
+  /* Always "pass" — this is a learning tool */
+  var allCorrect=S.quizMistakes.length===0;
+  body.innerHTML=
+    '<div style="width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:14px auto;border:6px solid #4caf50;">'+
+      '<div style="font-size:26px;font-weight:900;color:#4caf50;">'+firstTryCorrect+'/'+S.quizBank.length+'</div>'+
+      '<div style="font-size:11px;color:#888;text-align:center;">1st try</div>'+
+    '</div>'+
+    '<div style="text-align:center;font-size:15px;font-weight:700;margin-bottom:6px;">'+(allCorrect?'Perfect Score!':'Assessment Complete!')+'</div>'+
+    '<div style="text-align:center;font-size:12px;color:#888;margin-bottom:14px;">'+(allCorrect?'Well done! You got everything right on the first try.':'Good effort. Look at the topics below to learn more.')+
+    /* Show time taken */
+    (totalDur?'<div style="margin-top:6px;font-size:11px;color:#aaa;">Total time: '+totalDur+' mins</div>':'')+
+    '</div>';
+
+  if(S.quizMistakes.length>0){
+    var rev=document.createElement('div');
+    rev.style.cssText='margin-top:4px;text-align:left;';
+    rev.innerHTML='<div style="font-size:13px;font-weight:700;color:#e8380d;margin-bottom:8px;">Review These Topics:</div>'+
+      S.quizMistakes.map(function(m){
+        return '<div style="background:#fff5f3;border-left:4px solid #e8380d;border-radius:4px;padding:9px 10px;margin-bottom:8px;font-size:12px;line-height:1.6;">'+
+          '<div style="font-weight:700;color:#c62828;margin-bottom:3px;">'+m.imgLabel+'</div>'+
+          m.exp+
+        '</div>';
+      }).join('');
+    body.appendChild(rev);
+  }
+
+  var nb=document.createElement('button'); nb.className='bp'; nb.style.cssText='margin-top:14px;margin-bottom:9px;';
+  nb.textContent='↩ Exit Simulator';
+  nb.addEventListener('click',function(){confirmExit();});
+  body.appendChild(nb);
+}
+
+/* ════ LOGOUT / EXIT ════ */
+function doLogout(){openModal('modalLogout'); startLogoutTimer();}
+function startLogoutTimer(){
+  clearInterval(S.logoutInt);
+  var sec=30; txt('logoutBtn','Log Out ('+sec+'s)');
+  S.logoutInt=setInterval(function(){sec--; txt('logoutBtn',sec>0?'Log Out ('+sec+'s)':'Log Out'); if(sec<=0){clearInterval(S.logoutInt);performLogout();}},1000);
+}
+function performLogout(){closeModal('modalLogout'); clearInterval(S.logoutInt); toast('Logged out'); goTo('p1');}
+function confirmExit(){openModal('modalExit');}
+function doExit(){closeModal('modalExit'); resetState(); goTo('pReg');}
+
+/* ════ BIND ALL EVENTS after DOM ready ════ */
+document.addEventListener('DOMContentLoaded', function(){
+
+  /* Registration inputs */
+  ['regDriverID','regDriverName','regRoute'].forEach(function(id){
+    var e=$e(id); if(e) e.addEventListener('input', checkReg);
+  });
+  var regBtn=$e('regBtn'); if(regBtn) regBtn.addEventListener('click', submitReg);
+
+  /* Mode select */
+  var btnTrain=$e('btnTrain'); if(btnTrain) btnTrain.addEventListener('click',function(){selectMode('training');});
+  var btnTest=$e('btnTest'); if(btnTest) btnTest.addEventListener('click',function(){selectMode('test');});
+  var beginBtn=$e('beginBtn'); if(beginBtn) beginBtn.addEventListener('click',function(){resetState();goTo('p1');});
+
+  /* P1 */
+  var logo1=$e('spxLogoP1'); if(logo1) logo1.addEventListener('click', tapLogo);
+  var collBtn=$e('collectionBtn'); if(collBtn) collBtn.addEventListener('click',function(){toast('⚠️ Tap the SPX logo 3 times first to unlock');});
+  var driverOpBtn=$e('driverOpBtn'); if(driverOpBtn) driverOpBtn.addEventListener('click',function(){toast('Driver mode unlocked!');setTimeout(function(){goTo('p2');},400);});
+
+  /* P2 */
+  var qrBox=$e('qrBox'); if(qrBox) qrBox.addEventListener('click', doQRScan);
+  var cancelQRBtn=$e('cancelQRBtn'); if(cancelQRBtn) cancelQRBtn.addEventListener('click', cancelQR);
+
+  /* P4 */
+  var trainingModalOKBtn=$e('trainingModalOKBtn');
+  if(trainingModalOKBtn) trainingModalOKBtn.addEventListener('click',function(){closeModal('modalTraining');});
+
+  var startTaskBtn=$e('startTaskBtn'); if(startTaskBtn) startTaskBtn.addEventListener('click',function(){goTo('p5');});
+
+  /* P5 */
+  var completeRetrievalBtn=$e('completeRetrievalBtn'); if(completeRetrievalBtn) completeRetrievalBtn.addEventListener('click', doCompleteRetrieval);
+  var logoutP5Btn=$e('logoutP5Btn'); if(logoutP5Btn) logoutP5Btn.addEventListener('click', doLogout);
+
+  /* P6 */
+  var viewOLBtn=$e('viewOrderListBtn'); if(viewOLBtn) viewOLBtn.addEventListener('click',function(){openModal('modalOL');});
+
+  /* ── Agency searchable dropdown ── */
+  var AGENCIES = [
+    'Andhugan','CJ','Concept & Swift','CST Logistics','IND','Jao',
+    'Kenaud','Moments','Others','Perfect Swift','QT','Quickmove',
+    'Shopee Staff','SMR','Swift May','TMT','5G Max'
+  ].sort(function(a,b){
+    /* Alphabetical but put "Others" last always */
+    if(a==='Others') return 1;
+    if(b==='Others') return -1;
+    return a.localeCompare(b);
+  });
+
+  var agencyInput=$e('regAgency');
+  var agencyDropdown=$e('agencyDropdown');
+  var agencySearch=$e('agencySearch');
+  var agencyList=$e('agencyList');
+  var agencyChevron=$e('agencyChevron');
+
+  function renderAgencyList(filter){
+    if(!agencyList) return;
+    var filtered=filter
+      ? AGENCIES.filter(function(a){return a.toLowerCase().indexOf(filter.toLowerCase())>=0;})
+      : AGENCIES;
+    agencyList.innerHTML=filtered.map(function(a){
+      return '<div class="agency-opt" data-val="'+a+'">'+a+'</div>';
+    }).join('');
+    agencyList.querySelectorAll('.agency-opt').forEach(function(opt){
+      opt.addEventListener('click',function(){
+        agencyInput.value=opt.getAttribute('data-val');
+        closeAgencyDropdown();
+        checkReg();
+      });
+    });
+  }
+
+  function openAgencyDropdown(){
+    if(!agencyDropdown) return;
+    agencyDropdown.style.display='block';
+    agencyChevron.textContent='▲';
+    agencySearch.value='';
+    renderAgencyList('');
+    setTimeout(function(){agencySearch.focus();},50);
+  }
+
+  function closeAgencyDropdown(){
+    if(!agencyDropdown) return;
+    agencyDropdown.style.display='none';
+    agencyChevron.textContent='▼';
+  }
+
+  if(agencyInput){
+    agencyInput.addEventListener('click',function(){
+      if(agencyDropdown.style.display==='none') openAgencyDropdown();
+      else closeAgencyDropdown();
+    });
+    agencyInput.removeEventListener('input', checkReg); /* readonly — no typing */
+  }
+
+  if(agencySearch){
+    agencySearch.addEventListener('input',function(){
+      renderAgencyList(agencySearch.value);
+    });
+    /* Stop click inside search from bubbling to document close handler */
+    agencySearch.addEventListener('click',function(e){e.stopPropagation();});
+  }
+
+  if(agencyDropdown){
+    agencyDropdown.addEventListener('click',function(e){e.stopPropagation();});
+  }
+
+  /* Close dropdown when clicking outside */
+  document.addEventListener('click',function(e){
+    var wrap=$e('agencyDropdownWrap');
+    if(wrap && !wrap.contains(e.target)) closeAgencyDropdown();
+  });
+  function showScanReminderPopup(onConfirm){
+    var overlay=$e('scanReminderOverlay');
+    if(!overlay){ onConfirm(); return; }
+    /* Reset checkbox state */
+    var checkBox=overlay.querySelector('#scanReminderCheck');
+    var okBtn=overlay.querySelector('#scanReminderOKBtn');
+    if(checkBox){checkBox.style.background='';checkBox.style.borderColor='#ddd';checkBox.innerHTML='';}
+    if(okBtn){okBtn.style.background='#f0b0a0';okBtn.style.opacity='.65';}
+    overlay.classList.add('on');
+    var checked=false;
+    /* Single delegated handler on overlay */
+    overlay.onclick=function(e){
+      var tRow=e.target.closest('#scanReminderCheckRow');
+      var tBtn=e.target.closest('#scanReminderOKBtn');
+      if(tRow){
+        checked=!checked;
+        var cb=overlay.querySelector('#scanReminderCheck');
+        var ob=overlay.querySelector('#scanReminderOKBtn');
+        if(cb){cb.style.background=checked?'#e8380d':'';cb.style.borderColor=checked?'#e8380d':'#ddd';cb.innerHTML=checked?'<svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6L5 9L10 3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>':'';}
+        if(ob){ob.style.background=checked?'#e8380d':'#f0b0a0';ob.style.opacity=checked?'1':'.65';}
+      }
+      if(tBtn && checked){
+        overlay.onclick=null;
+        overlay.classList.remove('on');
+        onConfirm();
+      }
+    };
+  }
+
+  /* P7 Continue Delivery — bound directly on the button */
+  var btnContinueEl=$e('btnContinue');
+  if(btnContinueEl) btnContinueEl.addEventListener('click',function(){
+    if(hasC('btnContinue','dis')) return;
+    clearInterval(S.continueInt);
+    showScanReminderPopup(function(){goTo('p8');});
+  });
+  /* All logout buttons — direct binding */
+  ['logoutP5Btn','logoutP7Btn','logoutP8Btn'].forEach(function(id){
+    var btn=$e(id); if(btn) btn.addEventListener('click', doLogout);
+  });
+
+  /* Also handle via event delegation for safety */
+
+  /* P8 */
+  var tnInput=$e('tnInput'); if(tnInput) tnInput.addEventListener('click', showKB);
+  var tnClear=$e('tnClear'); if(tnClear) tnClear.addEventListener('click', clearTN);
+  var scanBarcodeBtn=$e('scanBarcodeBtn'); if(scanBarcodeBtn) scanBarcodeBtn.addEventListener('click', startScan);
+  var cancelScanBtn=$e('cancelScanBtn'); if(cancelScanBtn) cancelScanBtn.addEventListener('click', cancelScan);
+  var btnCompDeliv=$e('btnCompDeliv'); if(btnCompDeliv) btnCompDeliv.addEventListener('click',function(){if(S.delivCount>=MAX_DEPOSITS) goTo('p12'); else toast('⚠️ Complete all deliveries first');});
+  var logoutP8Btn=$e('logoutP8Btn'); if(logoutP8Btn) logoutP8Btn.addEventListener('click', doLogout);
+
+  /* Keyboard — letter keys */
+  document.querySelectorAll('.kk[data-kb]').forEach(function(k){
+    k.addEventListener('click',function(){kbType(k.getAttribute('data-kb'));});
+  });
+  document.querySelectorAll('.kk[data-kbs]').forEach(function(k){
+    k.addEventListener('click',function(){kbTypeShift(k.getAttribute('data-kbs'));});
+  });
+  var shiftKey=$e('shiftKey'); if(shiftKey) shiftKey.addEventListener('click', kbShift);
+  var kbDelBtn=$e('kbDelBtn'); if(kbDelBtn) kbDelBtn.addEventListener('click', kbDel);
+  var kbDelNum=$e('kbDelNum'); if(kbDelNum) kbDelNum.addEventListener('click', kbDel);
+  var kbDelNum2=$e('kbDelNum2'); if(kbDelNum2) kbDelNum2.addEventListener('click', kbDel);
+  var kbShowNumBtn=$e('kbShowNumBtn'); if(kbShowNumBtn) kbShowNumBtn.addEventListener('click', kbShowNum);
+  var kbShowLettersBtn=$e('kbShowLettersBtn'); if(kbShowLettersBtn) kbShowLettersBtn.addEventListener('click', kbShowLetters);
+  var kbSpaceLetters=$e('kbSpaceLetters'); if(kbSpaceLetters) kbSpaceLetters.addEventListener('click',function(){kbType(' ');});
+  var kbSpaceNums=$e('kbSpaceNums'); if(kbSpaceNums) kbSpaceNums.addEventListener('click',function(){kbType(' ');});
+  var kbReturnLetters=$e('kbReturnLetters'); if(kbReturnLetters) kbReturnLetters.addEventListener('click',function(){hideKB(); submitTN();});
+  var kbReturnNums=$e('kbReturnNums'); if(kbReturnNums) kbReturnNums.addEventListener('click',function(){hideKB(); submitTN();});
+
+  /* P10 */
+  var p10xBtn=$e('p10xBtn'); if(p10xBtn) p10xBtn.addEventListener('click', cancelDepositFromP10);
+  var doneCloseBtn=$e('doneCloseBtn'); if(doneCloseBtn) doneCloseBtn.addEventListener('click', doneAndClose);
+
+  /* P12 */
+  var exitFromP12Btn=$e('exitFromP12Btn'); if(exitFromP12Btn) exitFromP12Btn.addEventListener('click', confirmExit);
+
+  /* Doors */
+  var doorsContinueBtn=$e('doorsContinueBtn'); if(doorsContinueBtn) doorsContinueBtn.addEventListener('click', finishDoorAnim);
+
+  /* Modals */
+  var logoutBtn=$e('logoutBtn'); if(logoutBtn) logoutBtn.addEventListener('click', performLogout);
+  var cancelLogoutBtn=$e('cancelLogoutBtn'); if(cancelLogoutBtn) cancelLogoutBtn.addEventListener('click',function(){closeModal('modalLogout'); clearInterval(S.logoutInt);});
+  var closeOLBtn=$e('closeOLBtn'); if(closeOLBtn) closeOLBtn.addEventListener('click',function(){closeModal('modalOL');});
+  var closeOLBtnBottom=$e('closeOLBtnBottom'); if(closeOLBtnBottom) closeOLBtnBottom.addEventListener('click',function(){closeModal('modalOL');});
+  var rescanBtn=$e('rescanBtn'); if(rescanBtn) rescanBtn.addEventListener('click',function(){closeModal('modalWrongTN'); clearTN();});
+  var skipRetrievalBtn=$e('skipRetrievalBtn'); if(skipRetrievalBtn) skipRetrievalBtn.addEventListener('click',function(){closeModal('modalConfirmRetrieval'); proceedRetrieval();});
+  var continueRetrievalBtn=$e('continueRetrievalBtn'); if(continueRetrievalBtn) continueRetrievalBtn.addEventListener('click',function(){closeModal('modalConfirmRetrieval');});
+  var cancelExitBtn=$e('cancelExitBtn'); if(cancelExitBtn) cancelExitBtn.addEventListener('click',function(){closeModal('modalExit');});
+  var doExitBtn=$e('doExitBtn'); if(doExitBtn) doExitBtn.addEventListener('click', doExit);
+  var incompleteExitBtn=$e('incompleteExitBtn'); if(incompleteExitBtn) incompleteExitBtn.addEventListener('click',function(){closeModal('modalIncomplete'); doExit();});
+
+  /* ════ SPLASH ════ */
+  /* ════ SPLASH + WALKTHROUGH ════ */
+  var WALKTHROUGH_STEPS=[
+    {title:'Driver Operation Button',body:'This is how you enter Driver Mode. Tap "Driver Operation ▶" at the bottom of the locker screen — no secret tapping needed.',svg:'<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="10" width="170" height="60" rx="8" fill="#f5f5f5" stroke="#ddd" stroke-width="1"/><rect x="25" y="18" width="80" height="14" rx="4" fill="#eee"/><rect x="25" y="36" width="120" height="14" rx="4" fill="#eee"/><rect x="25" y="52" width="140" height="14" rx="5" fill="#fff" stroke="#e8380d" stroke-width="1.5"/><text x="95" y="63" text-anchor="middle" font-size="10" fill="#555" font-family="sans-serif" font-weight="600">Driver Operation ▶</text></svg>'},
+    {title:'QR Code Screen',body:'In the real app, open your Driver App first and select your job before scanning. In the simulator, just tap the QR code to continue.',svg:'<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect x="70" y="8" width="60" height="60" rx="6" fill="#fff" stroke="#ddd" stroke-width="1.5"/><rect x="76" y="14" width="14" height="14" rx="1" fill="none" stroke="#333" stroke-width="2"/><rect x="79" y="17" width="8" height="8" fill="#333"/><rect x="110" y="14" width="14" height="14" rx="1" fill="none" stroke="#333" stroke-width="2"/><rect x="113" y="17" width="8" height="8" fill="#333"/><rect x="76" y="46" width="14" height="14" rx="1" fill="none" stroke="#333" stroke-width="2"/><rect x="79" y="49" width="8" height="8" fill="#333"/><rect x="94" y="14" width="4" height="4" fill="#333"/><rect x="94" y="46" width="4" height="4" fill="#333"/><rect x="104" y="38" width="4" height="4" fill="#333"/><text x="100" y="76" text-anchor="middle" font-size="9" fill="#888" font-family="sans-serif">Tap QR to proceed</text></svg>'},
+    {title:'View TN List',body:'Tap this to see all tracking numbers assigned to you. Only collect parcels on your list — do not take others.',svg:'<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="10" width="160" height="60" rx="8" fill="#fff" stroke="#ddd" stroke-width="1"/><text x="30" y="28" font-size="10" fill="#2196f3" font-family="sans-serif" font-weight="700">View TN List</text><line x1="20" y1="34" x2="180" y2="34" stroke="#f0f0f0" stroke-width="1"/><rect x="30" y="40" width="60" height="7" rx="3" fill="#f0f0f0"/><rect x="140" y="40" width="30" height="7" rx="3" fill="#f0f0f0"/><rect x="30" y="52" width="60" height="7" rx="3" fill="#f0f0f0"/><rect x="140" y="52" width="30" height="7" rx="3" fill="#f0f0f0"/></svg>'},
+    {title:'Open Button',body:'Tap Open on each area card. All compartment doors open at once. Collect only parcels from your TN list.',svg:'<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="15" width="170" height="50" rx="8" fill="#fff" stroke="#eee" stroke-width="1.5"/><text x="30" y="38" font-size="12" fill="#222" font-family="sans-serif" font-weight="700">A Area</text><text x="30" y="52" font-size="9" fill="#888" font-family="sans-serif">Pending: 5</text><rect x="138" y="25" width="38" height="22" rx="6" fill="#fff" stroke="#e8380d" stroke-width="2"/><text x="157" y="40" text-anchor="middle" font-size="11" fill="#e8380d" font-family="sans-serif" font-weight="700">Open</text></svg>'},
+    {title:'Upsize Cell',body:'If the parcel does not fit, tap Upsize Cell to try a bigger compartment.',svg:'<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="20" width="34" height="42" rx="4" fill="#e8380d" opacity=".6"/><text x="32" y="45" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif" font-weight="700">A09</text><text x="72" y="44" text-anchor="middle" font-size="18" fill="#e8380d" font-family="sans-serif">→</text><rect x="88" y="14" width="52" height="52" rx="4" fill="#4caf50"/><text x="114" y="44" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif" font-weight="700">A09-A11</text><text x="158" y="30" font-size="9" fill="#4caf50" font-family="sans-serif">Bigger</text><text x="158" y="42" font-size="9" fill="#4caf50" font-family="sans-serif">size!</text></svg>'},
+    {title:'✕ Button — Cancel Deposit',body:'Scanned the wrong parcel, or parcel cannot fit after max upsize? Tap ✕ beside the tracking number to cancel and start over.',svg:'<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="25" width="170" height="30" rx="8" fill="#fff" stroke="#ddd" stroke-width="1.5"/><text x="30" y="45" font-size="10" fill="#aaa" font-family="sans-serif">SG1234567890AB</text><circle cx="170" cy="40" r="10" fill="#ffe0e0"/><text x="170" y="44" text-anchor="middle" font-size="13" fill="#e8380d" font-family="sans-serif" font-weight="700">✕</text><text x="100" y="70" text-anchor="middle" font-size="9" fill="#e8380d" font-family="sans-serif" font-weight="600">Tap ✕ to cancel deposit</text></svg>'},
+    {title:'Done & Close All Door',body:'After placing the parcel inside, tap this button. Always wait for the black confirmation screen before walking away from the locker.',svg:'<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="30" width="170" height="34" rx="8" fill="#e8380d"/><text x="100" y="51" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif" font-weight="700">Done &amp; Close All Door</text><rect x="55" y="10" width="90" height="16" rx="4" fill="#111" opacity=".8"/><text x="100" y="21" text-anchor="middle" font-size="8" fill="#fff" font-family="sans-serif">Wait for black screen ✓</text></svg>'}
+  ];
+
+  var wtIdx=0;
+
+  function renderWalkthrough(){
+    var step=WALKTHROUGH_STEPS[wtIdx];
+    var img=$e('wtStepImg'); if(img) img.innerHTML=step.svg;
+    var title=$e('wtTitle'); if(title) title.textContent=step.title;
+    var body=$e('wtBody'); if(body) body.textContent=step.body;
+    var counter=$e('wtCounter'); if(counter) counter.textContent=(wtIdx+1)+' of '+WALKTHROUGH_STEPS.length;
+    var prev=$e('wtPrev'); if(prev) prev.style.opacity=wtIdx===0?'0.3':'1';
+    var next=$e('wtNext'); if(next) next.textContent=wtIdx===WALKTHROUGH_STEPS.length-1?'Done ✓':'Next →';
+  }
+
+  /* ════ LANGUAGE PICK ON SPLASH ════ */
+  var LANG_FULL_NAMES={EN:'English',MS:'Bahasa Melayu',TA:'தமிழ் (Tamil)',HI:'हिन्दी (Hindi)',ZH:'中文 (Chinese)'};
+  var pickedLang='EN';
+
+  /* Language pick buttons */
+  var langPickList=$e('langPickList');
+  if(langPickList){
+    langPickList.querySelectorAll('.lang-pick-btn').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        pickedLang=btn.dataset.lang;
+        langPickList.querySelectorAll('.lang-pick-btn').forEach(function(b){
+          b.classList.remove('active');
+          var chk=b.querySelector('.lang-pick-check');
+          if(chk) chk.style.opacity='0';
+        });
+        btn.classList.add('active');
+        var chk=btn.querySelector('.lang-pick-check');
+        if(chk) chk.style.opacity='1';
+      });
+    });
+  }
+
+  /* Continue from language pick to welcome card */
+  var langPickNextBtn=$e('langPickNextBtn');
+  if(langPickNextBtn) langPickNextBtn.addEventListener('click',function(){
+    /* Apply chosen language */
+    CUR_LANG=pickedLang;
+    GUIDE_TIPS=ALL_TIPS[pickedLang]||ALL_TIPS['EN'];
+    /* Update globe dropdowns */
+    document.querySelectorAll('.lang-dropdown').forEach(function(dd){
+      dd.querySelectorAll('.lang-drop-btn').forEach(function(b){
+        b.classList.toggle('active', b.textContent===LANG_LABELS[pickedLang]);
+      });
+    });
+    /* Apply full UI translation */
+    applyLang(pickedLang);
+    /* Show welcome step */
+    var langStep=$e('splashLangStep'); if(langStep) langStep.style.display='none';
+    var welStep=$e('splashWelcomeStep'); if(welStep) welStep.style.display='block';
+  });
+
+  var splashOKBtn=$e('splashOKBtn');
+  if(splashOKBtn) splashOKBtn.addEventListener('click',function(){
+    var s=$e('splashOverlay'); if(s) s.style.display='none';
+  });
+
+  var splashHowBtn=$e('splashHowBtn');
+  if(splashHowBtn) splashHowBtn.addEventListener('click',function(){
+    wtIdx=0; renderWalkthrough();
+    var s=$e('splashOverlay'); if(s) s.style.display='none';
+    var w=$e('walkthroughOverlay'); if(w) w.classList.add('on');
+  });
+
+  var wtPrev=$e('wtPrev');
+  if(wtPrev) wtPrev.addEventListener('click',function(){
+    if(wtIdx>0){wtIdx--; renderWalkthrough();}
+  });
+  var wtNext=$e('wtNext');
+  if(wtNext) wtNext.addEventListener('click',function(){
+    if(wtIdx<WALKTHROUGH_STEPS.length-1){wtIdx++; renderWalkthrough();}
+    else{var w=$e('walkthroughOverlay'); if(w) w.classList.remove('on');}
+  });
+
+  /* ── Pre-doors: show before first area opened ── */
+  var preDoorsShown=false;
+  var _origOpenArea=openArea;
+  openArea=function(id){
+    if(!preDoorsShown){
+      preDoorsShown=true;
+      var overlay=$e('preDoorsOverlay'); if(overlay) overlay.classList.add('on');
+      var btn=$e('preDoorsOKBtn');
+      if(btn){
+        var handler=function(){
+          overlay.classList.remove('on');
+          btn.removeEventListener('click',handler);
+          _origOpenArea(id);
+        };
+        btn.addEventListener('click',handler);
+      }
+    } else {
+      _origOpenArea(id);
+    }
+  };
+
+  /* ── Upsize animation — persistent, tap to dismiss, grows per stage ── */
+  var CELL_SIZES=[
+    {w:52,h:58,label:'A09',color:'#e8380d'},
+    {w:72,h:72,label:'A09–A11',color:'#ff6f00'},
+    {w:90,h:88,label:'A09–A12',color:'#f9a825'},
+    {w:110,h:100,label:'B01–B04',color:'#4caf50'}
+  ];
+  var _origDoUpsize=doUpsizeP10;
+  doUpsizeP10=function(){
+    var prevStage=S.upsizeStage;
+    _origDoUpsize();
+    showUpsizeAnim(prevStage, S.upsizeStage);
+  };
+
+  function showUpsizeAnim(prevStage, newStage){
+    var prev=CELL_SIZES[Math.min(prevStage, CELL_SIZES.length-1)];
+    var curr=CELL_SIZES[Math.min(newStage, CELL_SIZES.length-1)];
+    var overlay=document.createElement('div');
+    overlay.className='upsize-anim-overlay on';
+    overlay.style.cursor='default'; /* don't tap-dismiss — must use button */
+    overlay.innerHTML=
+      '<div class="upsize-anim-card">'+
+        '<div class="upsize-anim-title">Compartment Upsized!</div>'+
+        '<div class="upsize-anim-sub">The locker is giving you a bigger space</div>'+
+        /* Door-close reminder — amber, must acknowledge */
+        '<div style="background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.3);border-radius:8px;padding:10px 12px;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start;">'+
+          '<div style="font-size:18px;flex-shrink:0;">🚪</div>'+
+          '<div style="font-size:12px;color:rgba(255,255,255,.9);line-height:1.6;"><b style="color:#fff;">Close the previous door first</b> before placing your parcel into the new compartment.</div>'+
+        '</div>'+
+        /* Size comparison */
+        '<div style="display:flex;align-items:flex-end;justify-content:center;gap:20px;margin-bottom:14px;height:110px;">'+
+          '<div style="text-align:center;">'+
+            '<div style="width:'+prev.w+'px;height:'+prev.h+'px;background:'+prev.color+';border-radius:6px;display:flex;align-items:center;justify-content:center;opacity:.5;position:relative;">'+
+              '<div style="font-size:9px;font-weight:800;color:#fff;letter-spacing:.5px;">'+prev.label+'</div>'+
+              '<div style="width:3px;height:10px;background:rgba(255,255,255,.4);border-radius:2px;position:absolute;right:6px;top:50%;transform:translateY(-50%);"></div>'+
+            '</div>'+
+            '<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:5px;">Before</div>'+
+          '</div>'+
+          '<div style="font-size:22px;color:#FFE000;font-weight:700;padding-bottom:18px;">→</div>'+
+          '<div style="text-align:center;">'+
+            '<div style="width:'+curr.w+'px;height:'+curr.h+'px;background:'+curr.color+';border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;transform-origin:left center;animation:doorSwing .7s .2s ease both;">'+
+              '<div style="font-size:9px;font-weight:800;color:#fff;letter-spacing:.5px;">'+curr.label+'</div>'+
+              '<div style="width:3px;height:12px;background:rgba(255,255,255,.4);border-radius:2px;position:absolute;right:6px;top:50%;transform:translateY(-50%);"></div>'+
+            '</div>'+
+            '<div style="font-size:10px;color:#FFE000;margin-top:5px;font-weight:700;">New size!</div>'+
+          '</div>'+
+        '</div>'+
+        /* Acknowledge button */
+        '<button id="upsizeAckBtn" style="background:#e8380d;color:#fff;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;width:100%;cursor:pointer;">I have closed the door — Continue</button>'+
+      '</div>';
+    if(!document.getElementById('upsizeKF')){
+      var st=document.createElement('style'); st.id='upsizeKF';
+      st.textContent='@keyframes doorSwing{0%{transform:rotateY(-85deg);}100%{transform:rotateY(0deg);}}';
+      document.head.appendChild(st);
+    }
+    var appEl=$e('app'); if(appEl) appEl.appendChild(overlay);
+    /* Only dismiss via button */
+    var ackBtn=overlay.querySelector('#upsizeAckBtn');
+    if(ackBtn) ackBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    });
+  }
+
+  /* ════ LANGUAGES ════ */
+  var LANGS=['EN','MS','TA','HI','ZH'];
+  var LANG_LABELS={EN:'EN',MS:'MS',TA:'TA',HI:'HI',ZH:'中文'};
+  var CUR_LANG='EN';
+
+  var ALL_TIPS={
+    EN:{
+      pReg:['Fill in all 4 boxes to continue.','<b>Driver ID</b> is numbers only — no letters.','Not sure about Agency? Ask your supervisor.'],
+      pMode:['Pick <b>Training</b> if this is your first time. It gives you hints along the way.','Pick <b>Assessment</b> when you are ready to be tested with no hints.'],
+      p1:['Tap the red <b>SPX</b> letters at the top left <b>3 times quickly</b> to unlock.','You will see 3 dots light up as you tap. Tap fast!'],
+      p2:['In real life, open your <b>Driver App</b> first and select your job.','Here in the simulator, just <b>tap the QR code</b> to continue.'],
+      p4:['Check the numbers — <b>Pending Retrieval</b> shows how many boxes have parcels waiting.','Tap <b>Start Task</b> when you are ready.'],
+      p5:['Tap <b>Open</b> on each area one by one to collect all parcels.','You must open <b>every area</b> before you can complete retrieval.','After all areas are opened, tap <b>Complete Retrieval</b>.'],
+      p7:['You just collected all the parcels. Now <b>scan each one in your Driver App</b>.','Wait for the <b>Continue Delivery</b> button to turn orange, then tap it.'],
+      p8:['Tap the orange <b>Simulate Barcode Scan</b> button to scan a parcel.','This simulates what you do in real life with the Driver App camera.'],
+      p10:['Put the parcel into the box shown on screen.','If the parcel does not fit, tap <b>Upsize Cell</b> to try a bigger box.','When the parcel is in, tap <b>Done & Close All Door</b>.'],
+      p11:['The parcel has been deposited successfully!','Wait for this screen before walking away from the locker.'],
+      p12:['All done! Tap <b>Take Assessment</b> to test what you have learned.','Or tap <b>Exit Simulator</b> to finish.'],
+      pQuiz:['Read each question carefully and pick the best answer.','If you get it wrong, the options stay open — try again!','There is no fail here. Just learn and improve.'],
+      pScore:['This shows how you did on the first try for each question.','Review the topics below to get better next time.']
+    },
+    MS:{
+      pReg:['Isi semua 4 kotak untuk meneruskan.','<b>ID Pemandu</b> nombor sahaja — tiada huruf.','Tidak pasti tentang Agensi? Tanya penyelia anda.'],
+      pMode:['Pilih <b>Latihan</b> jika ini pertama kali anda. Ia memberi petunjuk sepanjang jalan.','Pilih <b>Penilaian</b> apabila anda bersedia untuk diuji tanpa petunjuk.'],
+      p1:['Ketuk huruf merah <b>SPX</b> di kiri atas <b>3 kali dengan cepat</b> untuk membuka kunci.','Anda akan melihat 3 titik menyala semasa anda mengetuk. Ketuk cepat!'],
+      p2:['Dalam kehidupan sebenar, buka <b>Aplikasi Pemandu</b> anda dahulu dan pilih kerja anda.','Di sini dalam simulator, hanya <b>ketuk kod QR</b> untuk meneruskan.'],
+      p4:['Semak nombor — <b>Pengeluaran Tertangguh</b> menunjukkan berapa banyak kotak yang mempunyai bungkusan menunggu.','Ketuk <b>Mulakan Tugas</b> apabila anda bersedia.'],
+      p5:['Ketuk <b>Buka</b> pada setiap kawasan satu per satu untuk mengumpul semua bungkusan.','Anda mesti membuka <b>setiap kawasan</b> sebelum dapat melengkapkan pengeluaran.','Selepas semua kawasan dibuka, ketuk <b>Lengkapkan Pengeluaran</b>.'],
+      p7:['Anda baru mengumpulkan semua bungkusan. Sekarang <b>imbas setiap satu dalam Aplikasi Pemandu</b> anda.','Tunggu butang <b>Teruskan Penghantaran</b> bertukar oren, kemudian ketuknya.'],
+      p8:['Ketuk butang oren <b>Simulasi Imbas Kod Bar</b> untuk mengimbas bungkusan.','Ini mensimulasikan apa yang anda lakukan dalam kehidupan sebenar dengan kamera Aplikasi Pemandu.'],
+      p10:['Masukkan bungkusan ke dalam kotak yang ditunjukkan pada skrin.','Jika bungkusan tidak muat, ketuk <b>Besarkan Sel</b> untuk mencuba kotak yang lebih besar.','Apabila bungkusan sudah masuk, ketuk <b>Selesai & Tutup Semua Pintu</b>.'],
+      p11:['Bungkusan telah berjaya didepositkan!','Tunggu skrin ini sebelum beredar dari loker.'],
+      p12:['Selesai! Ketuk <b>Ambil Penilaian</b> untuk menguji apa yang telah anda pelajari.','Atau ketuk <b>Keluar Simulator</b> untuk tamat.'],
+      pQuiz:['Baca setiap soalan dengan teliti dan pilih jawapan terbaik.','Jika salah, pilihan masih terbuka — cuba lagi!','Tiada gagal di sini. Hanya belajar dan perbaiki diri.'],
+      pScore:['Ini menunjukkan prestasi anda pada percubaan pertama untuk setiap soalan.','Semak topik di bawah untuk menjadi lebih baik pada masa akan datang.']
+    },
+    TA:{
+      pReg:['தொடர 4 பெட்டிகளையும் நிரப்பவும்.','<b>ஓட்டுனர் ஐடி</b> எண்கள் மட்டுமே — எழுத்துக்கள் வேண்டாம்.','நிறுவனம் பற்றி தெரியவில்லையா? உங்கள் மேற்பார்வையாளரிடம் கேளுங்கள்.'],
+      pMode:['இது உங்கள் முதல் முறை எனில் <b>பயிற்சி</b> தேர்ந்தெடுக்கவும். வழிகாட்டுதல்கள் கிடைக்கும்.','குறிப்புகள் இல்லாமல் சோதிக்கத் தயாரானால் <b>மதிப்பீடு</b> தேர்ந்தெடுக்கவும்.'],
+      p1:['திறக்க மேல் இடதுபுறத்தில் உள்ள சிவப்பு <b>SPX</b> எழுத்துக்களை <b>3 முறை வேகமாக தட்டவும்</b>.','தட்டும்போது 3 புள்ளிகள் ஒளிரும். வேகமாக தட்டுங்கள்!'],
+      p2:['உண்மை வாழ்க்கையில், முதலில் உங்கள் <b>ஓட்டுனர் பயன்பாட்டை</b> திறந்து வேலையை தேர்ந்தெடுக்கவும்.','இங்கே simulator-ல், தொடர <b>QR குறியீட்டை தட்டவும்</b>.'],
+      p4:['எண்களைச் சரிபார்க்கவும் — <b>நிலுவை மீட்பு</b> எத்தனை பெட்டிகளில் பார்சல்கள் காத்திருக்கின்றன என காட்டும்.','தயாரானால் <b>பணி தொடங்கு</b> என்பதை தட்டவும்.'],
+      p5:['அனைத்து பார்சல்களையும் சேகரிக்க ஒவ்வொரு பகுதியிலும் <b>திற</b> என்பதை தட்டவும்.','மீட்பை முடிக்க <b>ஒவ்வொரு பகுதியையும்</b> திறக்க வேண்டும்.','அனைத்து பகுதிகளும் திறந்த பிறகு <b>மீட்பை முடி</b> என்பதை தட்டவும்.'],
+      p7:['நீங்கள் அனைத்து பார்சல்களையும் சேகரித்தீர்கள். இப்போது <b>ஓட்டுனர் பயன்பாட்டில் ஒவ்வொன்றையும் ஸ்கேன் செய்யவும்</b>.','<b>டெலிவரி தொடர்</b> பட்டன் ஆரஞ்சு நிறமாக மாறும் வரை காத்திருங்கள்.'],
+      p8:['பார்சலை ஸ்கேன் செய்ய ஆரஞ்சு <b>பார்கோட் ஸ்கேன் உருவகப்படுத்து</b> பட்டனை தட்டவும்.','இது ஓட்டுனர் பயன்பாட்டு கேமராவுடன் நீங்கள் செய்வதை போன்றது.'],
+      p10:['திரையில் காட்டப்படும் பெட்டியில் பார்சலை வையுங்கள்.','பார்சல் பொருந்தவில்லை எனில் <b>செல் பெரிதாக்கு</b> என்பதை தட்டவும்.','பார்சல் உள்ளே இருக்கும்போது <b>முடிந்தது & அனைத்து கதவுகளையும் மூடு</b> என்பதை தட்டவும்.'],
+      p11:['பார்சல் வெற்றிகரமாக வைக்கப்பட்டது!','லாக்கரை விட்டு நகர்வதற்கு முன் இந்த திரைக்காக காத்திருங்கள்.'],
+      p12:['முடிந்தது! நீங்கள் கற்றதை சோதிக்க <b>மதிப்பீடு எடு</b> என்பதை தட்டவும்.','அல்லது முடிக்க <b>Simulator-ல் இருந்து வெளியேறு</b> என்பதை தட்டவும்.'],
+      pQuiz:['ஒவ்வொரு கேள்வியையும் கவனமாகப் படிங்கள்.','தவறானால் விருப்பங்கள் திறந்திருக்கும் — மீண்டும் முயற்சிக்கவும்!','இங்கே தோல்வியில்லை. கற்று மேம்படுங்கள்.'],
+      pScore:['ஒவ்வொரு கேள்விக்கும் முதல் முயற்சியில் நீங்கள் எப்படி செய்தீர்கள் என காட்டுகிறது.','அடுத்த முறை சிறப்பாக செய்ய கீழே உள்ள தலைப்புகளை மதிப்பாய்வு செய்யவும்.']
+    },
+    HI:{
+      pReg:['जारी रखने के लिए सभी 4 बॉक्स भरें।','<b>ड्राइवर ID</b> केवल नंबर — कोई अक्षर नहीं।','एजेंसी के बारे में नहीं पता? अपने सुपरवाइज़र से पूछें।'],
+      pMode:['यदि यह पहली बार है तो <b>Training</b> चुनें। यह रास्ते में संकेत देता है।','जब बिना संकेत के परीक्षण के लिए तैयार हों तो <b>Assessment</b> चुनें।'],
+      p1:['अनलॉक करने के लिए ऊपर बाईं ओर लाल <b>SPX</b> अक्षरों को <b>3 बार जल्दी से</b> टैप करें।','टैप करते समय 3 डॉट्स जलेंगे। जल्दी टैप करें!'],
+      p2:['वास्तविक जीवन में, पहले अपना <b>Driver App</b> खोलें और अपनी जॉब चुनें।','यहाँ simulator में, जारी रखने के लिए बस <b>QR कोड टैप करें</b>।'],
+      p4:['नंबर जांचें — <b>Pending Retrieval</b> दिखाता है कि कितने बॉक्स में पार्सल इंतजार कर रहे हैं।','तैयार होने पर <b>Start Task</b> टैप करें।'],
+      p5:['सभी पार्सल इकट्ठा करने के लिए हर एरिया पर एक-एक करके <b>Open</b> टैप करें।','retrieval पूरा करने से पहले <b>हर एरिया</b> खोलना होगा।','सभी एरिया खुलने के बाद <b>Complete Retrieval</b> टैप करें।'],
+      p7:['आपने सभी पार्सल इकट्ठा कर लिए। अब <b>Driver App में हर एक को स्कैन करें</b>।','<b>Continue Delivery</b> बटन के नारंगी होने का इंतजार करें, फिर टैप करें।'],
+      p8:['पार्सल स्कैन करने के लिए नारंगी <b>Simulate Barcode Scan</b> बटन टैप करें।','यह वही है जो आप Driver App कैमरे से वास्तविक जीवन में करते हैं।'],
+      p10:['स्क्रीन पर दिखाए गए बॉक्स में पार्सल रखें।','यदि पार्सल फिट नहीं होता, तो बड़े बॉक्स के लिए <b>Upsize Cell</b> टैप करें।','जब पार्सल अंदर हो, <b>Done & Close All Door</b> टैप करें।'],
+      p11:['पार्सल सफलतापूर्वक जमा हो गया!','लॉकर से जाने से पहले इस स्क्रीन का इंतजार करें।'],
+      p12:['हो गया! आपने जो सीखा उसे परखने के लिए <b>Take Assessment</b> टैप करें।','या खत्म करने के लिए <b>Exit Simulator</b> टैप करें।'],
+      pQuiz:['हर सवाल को ध्यान से पढ़ें और सबसे अच्छा जवाब चुनें।','गलत होने पर विकल्प खुले रहते हैं — फिर से कोशिश करें!','यहाँ कोई fail नहीं है। बस सीखें और सुधरें।'],
+      pScore:['यह दिखाता है कि आपने हर सवाल पर पहली कोशिश में कैसा किया।','अगली बार बेहतर करने के लिए नीचे दिए टॉपिक्स देखें।']
+    },
+    ZH:{
+      pReg:['填写所有4个框才能继续。','<b>司机ID</b>只能填数字——不能有字母。','不知道填什么机构？问您的主管。'],
+      pMode:['如果是第一次，请选择<b>培训</b>。全程会有提示帮助您。','准备好无提示测试时，请选择<b>考核</b>。'],
+      p1:['请快速点击左上角红色<b>SPX</b>字母<b>3次</b>来解锁。','点击时您会看到3个点亮起。要快！'],
+      p2:['实际操作中，请先打开您的<b>司机App</b>并选择您的任务。','在模拟器中，直接<b>点击二维码</b>继续。'],
+      p4:['查看数字——<b>待取件</b>显示有多少格子里有包裹在等待。','准备好后点击<b>开始任务</b>。'],
+      p5:['逐一点击每个区域的<b>开启</b>来取出所有包裹。','必须开启<b>每个区域</b>才能完成取件。','所有区域开启后，点击<b>完成取件</b>。'],
+      p7:['您已取出所有包裹。现在请<b>在司机App中逐一扫描</b>。','等待<b>继续配送</b>按钮变橙色后再点击。'],
+      p8:['点击橙色<b>模拟条码扫描</b>按钮来扫描包裹。','这模拟了您在实际操作中用司机App相机所做的事。'],
+      p10:['将包裹放入屏幕上显示的格子中。','如果包裹放不进去，点击<b>扩大格子</b>试试更大的格子。','包裹放好后，点击<b>完成并关闭所有门</b>。'],
+      p11:['包裹已成功存入！','离开储物柜前请等待此屏幕出现。'],
+      p12:['完成！点击<b>参加考核</b>测试您所学到的知识。','或点击<b>退出模拟器</b>结束。'],
+      pQuiz:['仔细阅读每道题，选出最佳答案。','答错了选项仍然开放——再试一次！','这里没有不及格。只要学习和进步。'],
+      pScore:['这显示您在每道题第一次尝试时的表现。','查看下方主题，下次做得更好。']
+    }
+  };
+
+  var GUIDE_TIPS=ALL_TIPS['EN'];
+
+  /* ── Language toggle bar ── */
+  /* ── Change 1: Globe language button — injected into each sbar ── */
+  /* We add a globe button to the sbar of pages that have one */
+  function injectGlobeBtn(sbarEl){
+    if(!sbarEl || sbarEl.querySelector('.lang-globe-wrap')) return;
+    var wrap=document.createElement('div');
+    wrap.className='lang-globe-wrap';
+    wrap.style.cssText='position:relative;display:inline-flex;align-items:center;';
+    var globeBtn=document.createElement('button');
+    globeBtn.className='lang-globe-btn';
+    globeBtn.innerHTML='&#x1F310;';
+    globeBtn.setAttribute('aria-label','Change language');
+    var dropdown=document.createElement('div');
+    dropdown.className='lang-dropdown';
+    LANGS.forEach(function(l){
+      var b=document.createElement('button');
+      b.className='lang-drop-btn'+(l===CUR_LANG?' active':'');
+      b.textContent=LANG_LABELS[l];
+      b.addEventListener('click',function(e){
+        e.stopPropagation();
+        CUR_LANG=l; GUIDE_TIPS=ALL_TIPS[l];
+        dropdown.querySelectorAll('.lang-drop-btn').forEach(function(x){x.classList.remove('active');});
+        b.classList.add('active');
+        /* update all other dropdowns */
+        document.querySelectorAll('.lang-dropdown').forEach(function(dd){
+          dd.querySelectorAll('.lang-drop-btn').forEach(function(x){
+            x.classList.toggle('active', x.textContent===LANG_LABELS[l]);
+          });
+        });
+        dropdown.classList.remove('on');
+        applyLang(l);
+        showGuide(G.currentPage);
+      });
+      dropdown.appendChild(b);
+    });
+    globeBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      /* Close all other dropdowns first */
+      document.querySelectorAll('.lang-dropdown').forEach(function(dd){if(dd!==dropdown)dd.classList.remove('on');});
+      dropdown.classList.toggle('on');
+    });
+    document.addEventListener('click',function(){dropdown.classList.remove('on');});
+    wrap.appendChild(globeBtn);
+    wrap.appendChild(dropdown);
+    sbarEl.appendChild(wrap);
+  }
+  /* Inject into all sbar elements */
+  document.querySelectorAll('.sbar').forEach(function(sb){injectGlobeBtn(sb);});
+
+  /* ════ FULL UI STRINGS ════ */
+  var UI_STRINGS={
+    EN:{
+      /* Registration */
+      regTitle:'Driver Registration', regSub:'Please fill in your details before starting.',
+      regIDLabel:'Driver ID *', regIDHint:'(numbers only)',
+      regNameLabel:'Driver Name *', regNameHint:'(e.g. SPX_FTE_Jon)',
+      regRouteLabel:'Route *', regRouteHint:'(e.g. 26A)',
+      regAgencyLabel:'Agency *',
+      regContinue:'Continue →',
+      /* Mode */
+      modeTitle:'Select Mode',
+      modeTrain:'Training', modeTest:'Assessment',
+      modeDescTrain:'Guided flow with step-by-step hints',
+      modeDescTest:'Scenario questions — no hints shown',
+      modeBegin:'Begin',
+      /* P1 */
+      p1Title:'SPX Locker @ Galaxis, S138522',
+      p1Sub:'Please select a service to begin.',
+      p1Collection:'Collection',
+      /* P4 */
+      p4LoginOK:'Log in successfully',
+      p4Sub:'Please follow the instructions to finish the Locker task.',
+      p4Retrieval:'Pending Retrieval', p4Delivery:'Pending Delivery',
+      p4Start:'Start Task',
+      /* P5 */
+      p5Header:'parcel(s) pending retrieve',
+      p5SubNote:'Ensure all doors are closed before proceeding to the next step.',
+      p5HintText:'Tap Open on each area. Collect all parcels, then tap Complete Retrieval.',
+      p5Logout:'Log Out', p5Complete:'Complete Retrieval',
+      /* P7 */
+      p7Title:'Locker Retrieval Success', p7Sub:'Locker retrieval is complete',
+      p7Pending:'Scan the parcel on driver\'s app',
+      p7PendingSub:'Before proceeding with delivery, scan all collected parcels via the SPX Driver APP',
+      p7Logout:'Log Out', p7Continue:'Continue Delivery',
+      /* P8 */
+      p8Delivered:'Delivered:', p8Placeholder:'Please scan / input SPXTN',
+      p8ScanBtn:'Simulate Barcode Scan',
+      p8InboundLabel:'Inbound Parcel',
+      p8ReopenCannot:'Reopen Cell | Cannot Fit',
+      p8Logout:'Log Out', p8CompDeliv:'Complete Delivery',
+      /* P10 */
+      p10InboundLabel:'Inbound Parcel',
+      p10UpsizeBtn:'Upsize Cell', p10ReopenBtn:'Reopen Cell',
+      p10DoneBtn:'Done & Close All Door',
+      p10CantFit:'Parcel cannot fit.',
+      p10CantFitSub:'Tap the ✕ button above to cancel this deposit and return the parcel to the hub.',
+      /* P11 */
+      p11Title:'Deposit Confirmed!',
+      p11Hint:'Always wait for this confirmation before leaving the locker.',
+      /* P12 */
+      p12Title:'Delivery Complete!',
+      p12Sub:'All parcels have been successfully deposited.',
+      p12SummaryTitle:'Session Summary',
+      p12Driver:'Driver', p12Route:'Route', p12Delivered:'Parcels Delivered', p12Mode:'Mode',
+      p12Assess:'Take Assessment →', p12Exit:'Exit Simulator',
+      /* Quiz */
+      quizHeader:'Assessment', quizHeaderSub:'Scenario-based — no hints',
+      quizOf:'of', quizNextQ:'Next Question', quizViewRes:'View Results',
+      quizCorrect:'Correct!', quizNotQuite:'Not quite. Read the options again and try a different answer.',
+      /* Score */
+      scoreHeader:'Results', scoreHeaderSub:'SPX Locker Assessment',
+      scorePerfect:'Perfect Score!', scoreComplete:'Assessment Complete!',
+      scorePerfectSub:'Well done! You got everything right on the first try.',
+      scoreCompleteSub:'Good effort. Look at the topics below to learn more.',
+      scoreReview:'Review These Topics:',
+      scoreExit:'Exit Simulator',
+      /* Modals */
+      modalLogoutTitle:'Log Out',
+      modalLogoutBody:'You have not completed the locker task. Are you sure you want to log out?',
+      modalLogoutConfirm:'Log Out', modalLogoutCancel:'Continue',
+      modalExitTitle:'Exit Simulator',
+      modalExitBody:'Return to the start screen? All progress will be reset.',
+      modalExitCancel:'Cancel', modalExitConfirm:'Exit',
+      modalWrongTNTitle:'TN Not Found',
+      modalWrongTNBody:'This tracking number does not match any assigned parcel. Please re-scan the correct parcel.',
+      modalWrongTNBtn:'Re-scan',
+      modalConfirmRetrievalTitle:'Confirm',
+      modalConfirmRetrievalBody:'There are still orders pending retrieval. Do you want to continue collecting these orders?',
+      modalSkip:'Skip', modalContinue:'Continue',
+      /* Doors */
+      doorsTitle:'Opening compartments…',
+      doorsSub:'Watch the doors open, then tap each one to collect the parcel inside',
+      doorsSubDone:'All doors open! Tap each one to collect, then tap again to close.',
+      doorsSubCollected:'All parcels collected! Tap below to continue.',
+      doorsContinueBtn:'All Retrieved — Continue',
+      /* Splash */
+      splashTitle:'Welcome to SPX Locker Training',
+      splashBody:'Not sure what to do? Look at the <b style="color:#e8380d;">bottom of the screen</b> — your guide will tell you what to tap next.',
+      splashBtn:'I\'m Ready',splashTitle:'Welcome to SPX Locker Training',splashB1:'This is a practice run to help you learn the locker process',splashB2:'Follow the guide bar at the bottom for help',splashB3:'Tap Driver Operation on the next screen to begin',langPickNext:'Continue →',
+      /* Forced upsize */
+      forcedTooBig:'Parcel is too big for',
+      forcedTapUpsize:'Tap Upsize Cell to try a larger compartment.',
+      forcedMaxReached:'Maximum size reached. Parcel still cannot fit.',
+      forcedTapX:'You must cancel this deposit. Tap the ✕ button above.',
+      forcedWellDone:'Well Done!',
+      forcedWellDoneBody:'You correctly cancelled the deposit using the ✕ button.<br><br>When a parcel cannot fit even after maximum upsize, always tap <b style="color:#e8380d;">✕ beside the SPXTN field</b> to cancel and return the parcel to the hub.',
+      forcedKeyTakeaway:'Key Takeaway: Never force a parcel in or leave it at the locker. The ✕ button is your cancel action.',
+      forcedGotIt:'Got it — Continue →',
+      /* Exit btn */
+      exitBtn:'Exit Simulator',
+      /* Guide */
+      guideLabel:'SPX Guide',driverOp:'Driver Operation'
+    },
+    MS:{
+      regTitle:'Pendaftaran Pemandu', regSub:'Sila isi maklumat anda sebelum memulakan.',
+      regIDLabel:'ID Pemandu *', regIDHint:'(nombor sahaja)',
+      regNameLabel:'Nama Pemandu *', regNameHint:'(cth. SPX_FTE_Jon)',
+      regRouteLabel:'Laluan *', regRouteHint:'(cth. 26A)',
+      regAgencyLabel:'Agensi *',
+      regContinue:'Teruskan →',
+      modeTitle:'Pilih Mod',
+      modeTrain:'Latihan', modeTest:'Penilaian',
+      modeDescTrain:'Aliran berpandu dengan petunjuk langkah demi langkah',
+      modeDescTest:'Soalan senario — tiada petunjuk ditunjukkan',
+      modeBegin:'Mulakan',
+      p1Title:'SPX Locker @ Galaxis, S138522',
+      p1Sub:'Sila pilih perkhidmatan untuk memulakan.',
+      p1Collection:'Koleksi',
+      p4LoginOK:'Log masuk berjaya',
+      p4Sub:'Sila ikut arahan untuk menyelesaikan tugas Locker.',
+      p4Retrieval:'Pengeluaran Tertangguh', p4Delivery:'Penghantaran Tertangguh',
+      p4Start:'Mulakan Tugas',
+      p5Header:'bungkusan menunggu untuk diambil',
+      p5SubNote:'Pastikan semua pintu ditutup sebelum meneruskan ke langkah seterusnya.',
+      p5HintText:'Ketuk Buka pada setiap kawasan. Kumpul semua bungkusan, kemudian ketuk Lengkapkan Pengeluaran.',
+      p5Logout:'Log Keluar', p5Complete:'Lengkapkan Pengeluaran',
+      p7Title:'Pengeluaran Locker Berjaya', p7Sub:'Pengeluaran locker selesai',
+      p7Pending:'Imbas bungkusan dalam apl pemandu',
+      p7PendingSub:'Sebelum meneruskan penghantaran, imbas semua bungkusan yang dikumpul melalui Apl Pemandu SPX',
+      p7Logout:'Log Keluar', p7Continue:'Teruskan Penghantaran',
+      p8Delivered:'Dihantar:', p8Placeholder:'Sila imbas / masukkan SPXTN',
+      p8ScanBtn:'Simulasi Imbas Kod Bar',
+      p8InboundLabel:'Bungkusan Masuk',
+      p8ReopenCannot:'Buka Semula Sel | Tidak Muat',
+      p8Logout:'Log Keluar', p8CompDeliv:'Lengkapkan Penghantaran',
+      p10InboundLabel:'Bungkusan Masuk',
+      p10UpsizeBtn:'Besarkan Sel', p10ReopenBtn:'Buka Semula Sel',
+      p10DoneBtn:'Selesai & Tutup Semua Pintu',
+      p10CantFit:'Bungkusan tidak muat.',
+      p10CantFitSub:'Ketuk butang ✕ di atas untuk membatalkan deposit ini dan pulangkan bungkusan ke hab.',
+      p11Title:'Deposit Disahkan!',
+      p11Hint:'Sentiasa tunggu pengesahan ini sebelum meninggalkan loker.',
+      p12Title:'Penghantaran Selesai!',
+      p12Sub:'Semua bungkusan telah berjaya didepositkan.',
+      p12SummaryTitle:'Ringkasan Sesi',
+      p12Driver:'Pemandu', p12Route:'Laluan', p12Delivered:'Bungkusan Dihantar', p12Mode:'Mod',
+      p12Assess:'Ambil Penilaian →', p12Exit:'Keluar Simulator',
+      quizHeader:'Penilaian', quizHeaderSub:'Berasaskan senario — tiada petunjuk',
+      quizOf:'daripada', quizNextQ:'Soalan Seterusnya', quizViewRes:'Lihat Keputusan',
+      quizCorrect:'Betul!', quizNotQuite:'Tidak tepat. Baca pilihan sekali lagi dan cuba jawapan lain.',
+      scoreHeader:'Keputusan', scoreHeaderSub:'Penilaian SPX Locker',
+      scorePerfect:'Markah Sempurna!', scoreComplete:'Penilaian Selesai!',
+      scorePerfectSub:'Bagus! Anda betul semua pada percubaan pertama.',
+      scoreCompleteSub:'Usaha yang baik. Lihat topik di bawah untuk belajar lebih lanjut.',
+      scoreReview:'Semak Topik Ini:',
+      scoreExit:'Keluar Simulator',
+      modalLogoutTitle:'Log Keluar',
+      modalLogoutBody:'Anda belum menyelesaikan tugas loker. Adakah anda pasti mahu log keluar?',
+      modalLogoutConfirm:'Log Keluar', modalLogoutCancel:'Teruskan',
+      modalExitTitle:'Keluar Simulator',
+      modalExitBody:'Kembali ke skrin permulaan? Semua kemajuan akan diset semula.',
+      modalExitCancel:'Batal', modalExitConfirm:'Keluar',
+      modalWrongTNTitle:'TN Tidak Dijumpai',
+      modalWrongTNBody:'Nombor pengesanan ini tidak sepadan dengan mana-mana bungkusan yang ditetapkan. Sila imbas semula bungkusan yang betul.',
+      modalWrongTNBtn:'Imbas Semula',
+      modalConfirmRetrievalTitle:'Sahkan',
+      modalConfirmRetrievalBody:'Masih ada pesanan yang menunggu untuk diambil. Adakah anda mahu terus mengumpul pesanan ini?',
+      modalSkip:'Langkau', modalContinue:'Teruskan',
+      doorsTitle:'Membuka petak…',
+      doorsSub:'Tonton pintu terbuka, kemudian ketuk setiap satu untuk mengambil bungkusan',
+      doorsSubDone:'Semua pintu terbuka! Ketuk setiap satu untuk mengumpul, kemudian ketuk lagi untuk menutup.',
+      doorsSubCollected:'Semua bungkusan dikumpul! Ketuk di bawah untuk meneruskan.',
+      doorsContinueBtn:'Semua Diambil — Teruskan',
+      splashTitle:'Selamat Datang ke Latihan SPX Locker',
+      splashBody:'Tidak tahu apa yang perlu dilakukan? Lihat <b style="color:#e8380d;">bahagian bawah skrin</b> — panduan anda akan memberitahu apa yang perlu diketuk seterusnya.',
+      splashBtn:'Saya Bersedia',splashTitle:'Selamat Datang ke Latihan SPX Locker',splashB1:'Ini adalah latihan untuk membantu anda mempelajari proses loker',splashB2:'Ikuti bar panduan di bahagian bawah untuk bantuan',splashB3:'Ketuk Operasi Pemandu pada skrin seterusnya untuk memulakan',langPickNext:'Teruskan →',
+      forcedTooBig:'Bungkusan terlalu besar untuk',
+      forcedTapUpsize:'Ketuk Besarkan Sel untuk mencuba petak yang lebih besar.',
+      forcedMaxReached:'Saiz maksimum dicapai. Bungkusan masih tidak muat.',
+      forcedTapX:'Anda mesti membatalkan deposit ini. Ketuk butang ✕ di atas.',
+      forcedWellDone:'Bagus!',
+      forcedWellDoneBody:'Anda betul membatalkan deposit menggunakan butang ✕.<br><br>Apabila bungkusan tidak muat selepas upsize maksimum, sentiasa ketuk <b style="color:#e8380d;">✕ di sebelah medan SPXTN</b> untuk membatalkan dan pulangkan bungkusan ke hab.',
+      forcedKeyTakeaway:'Pengajaran Utama: Jangan paksa bungkusan masuk atau tinggalkannya di loker. Butang ✕ adalah tindakan batal anda.',
+      forcedGotIt:'Faham — Teruskan →',
+      exitBtn:'Keluar Simulator',
+      guideLabel:'Panduan SPX',driverOp:'Operasi Pemandu'
+    },
+    TA:{
+      regTitle:'ஓட்டுனர் பதிவு', regSub:'தொடங்கும் முன் உங்கள் விவரங்களை நிரப்பவும்.',
+      regIDLabel:'ஓட்டுனர் ஐடி *', regIDHint:'(எண்கள் மட்டுமே)',
+      regNameLabel:'ஓட்டுனர் பெயர் *', regNameHint:'(எ.கா. SPX_FTE_Jon)',
+      regRouteLabel:'வழி *', regRouteHint:'(எ.கா. 26A)',
+      regAgencyLabel:'நிறுவனம் *',
+      regContinue:'தொடரவும் →',
+      modeTitle:'முறையை தேர்ந்தெடுக்கவும்',
+      modeTrain:'பயிற்சி', modeTest:'மதிப்பீடு',
+      modeDescTrain:'படிப்படியான குறிப்புகளுடன் வழிகாட்டப்பட்ட ஓட்டம்',
+      modeDescTest:'சூழல் கேள்விகள் — குறிப்புகள் காட்டப்படாது',
+      modeBegin:'தொடங்கு',
+      p1Title:'SPX Locker @ Galaxis, S138522',
+      p1Sub:'தொடங்க ஒரு சேவையை தேர்ந்தெடுக்கவும்.',
+      p1Collection:'சேகரிப்பு',
+      p4LoginOK:'உள்நுழைவு வெற்றிகரமாக முடிந்தது',
+      p4Sub:'லாக்கர் பணியை முடிக்க வழிமுறைகளை பின்பற்றவும்.',
+      p4Retrieval:'நிலுவை மீட்பு', p4Delivery:'நிலுவை டெலிவரி',
+      p4Start:'பணி தொடங்கு',
+      p5Header:'பார்சல்கள் மீட்கப்பட வேண்டியுள்ளன',
+      p5SubNote:'அடுத்த படிக்கு செல்வதற்கு முன் அனைத்து கதவுகளும் மூடப்பட்டிருப்பதை உறுதிப்படுத்தவும்.',
+      p5HintText:'ஒவ்வொரு பகுதியிலும் திற என்பதை தட்டவும். அனைத்து பார்சல்களையும் சேகரித்த பிறகு மீட்பை முடி என்பதை தட்டவும்.',
+      p5Logout:'வெளியேறு', p5Complete:'மீட்பை முடி',
+      p7Title:'லாக்கர் மீட்பு வெற்றிகரமானது', p7Sub:'லாக்கர் மீட்பு முடிந்தது',
+      p7Pending:'ஓட்டுனர் பயன்பாட்டில் பார்சலை ஸ்கேன் செய்யுங்கள்',
+      p7PendingSub:'டெலிவரியை தொடர்வதற்கு முன், SPX ஓட்டுனர் பயன்பாட்டின் மூலம் சேகரிக்கப்பட்ட அனைத்து பார்சல்களையும் ஸ்கேன் செய்யவும்',
+      p7Logout:'வெளியேறு', p7Continue:'டெலிவரி தொடரவும்',
+      p8Delivered:'டெலிவரி செய்யப்பட்டது:', p8Placeholder:'SPXTN ஸ்கேன் செய்யவும் / உள்ளிடவும்',
+      p8ScanBtn:'பார்கோட் ஸ்கேன் உருவகப்படுத்து',
+      p8InboundLabel:'உள்வரும் பார்சல்',
+      p8ReopenCannot:'செல் மீண்டும் திற | பொருந்தவில்லை',
+      p8Logout:'வெளியேறு', p8CompDeliv:'டெலிவரி முடி',
+      p10InboundLabel:'உள்வரும் பார்சல்',
+      p10UpsizeBtn:'செல் பெரிதாக்கு', p10ReopenBtn:'செல் மீண்டும் திற',
+      p10DoneBtn:'முடிந்தது & அனைத்து கதவுகளையும் மூடு',
+      p10CantFit:'பார்சல் பொருந்தவில்லை.',
+      p10CantFitSub:'இந்த டெபாசிட்டை ரத்து செய்து பார்சலை ஹப்பிற்கு திருப்பி அனுப்ப மேலே உள்ள ✕ பட்டனை தட்டவும்.',
+      p11Title:'டெபாசிட் உறுதிப்படுத்தப்பட்டது!',
+      p11Hint:'லாக்கரை விட்டு நகர்வதற்கு முன் இந்த உறுதிப்படுத்தலுக்காக காத்திருங்கள்.',
+      p12Title:'டெலிவரி முடிந்தது!',
+      p12Sub:'அனைத்து பார்சல்களும் வெற்றிகரமாக டெபாசிட் செய்யப்பட்டன.',
+      p12SummaryTitle:'அமர்வு சுருக்கம்',
+      p12Driver:'ஓட்டுனர்', p12Route:'வழி', p12Delivered:'டெலிவரி செய்யப்பட்ட பார்சல்கள்', p12Mode:'முறை',
+      p12Assess:'மதிப்பீடு எடு →', p12Exit:'சிமுலேட்டரை விட்டு வெளியேறு',
+      quizHeader:'மதிப்பீடு', quizHeaderSub:'சூழல் அடிப்படையிலானது — குறிப்புகள் இல்லை',
+      quizOf:'இல்', quizNextQ:'அடுத்த கேள்வி', quizViewRes:'முடிவுகளை பார்',
+      quizCorrect:'சரியானது!', quizNotQuite:'சரியில்லை. விருப்பங்களை மீண்டும் படிங்கள்.',
+      scoreHeader:'முடிவுகள்', scoreHeaderSub:'SPX லாக்கர் மதிப்பீடு',
+      scorePerfect:'சரியான மதிப்பெண்!', scoreComplete:'மதிப்பீடு முடிந்தது!',
+      scorePerfectSub:'நன்று! முதல் முயற்சியில் அனைத்தும் சரியாக செய்தீர்கள்.',
+      scoreCompleteSub:'நல்ல முயற்சி. மேலும் கற்க கீழே உள்ள தலைப்புகளை பாருங்கள்.',
+      scoreReview:'இந்த தலைப்புகளை மதிப்பாய்வு செய்யுங்கள்:',
+      scoreExit:'சிமுலேட்டரை விட்டு வெளியேறு',
+      modalLogoutTitle:'வெளியேறு',
+      modalLogoutBody:'நீங்கள் லாக்கர் பணியை முடிக்கவில்லை. நிச்சயமாக வெளியேற விரும்புகிறீர்களா?',
+      modalLogoutConfirm:'வெளியேறு', modalLogoutCancel:'தொடரவும்',
+      modalExitTitle:'சிமுலேட்டரை விட்டு வெளியேறு',
+      modalExitBody:'தொடக்க திரைக்கு திரும்பவா? அனைத்து முன்னேற்றமும் மீட்டமைக்கப்படும்.',
+      modalExitCancel:'ரத்து', modalExitConfirm:'வெளியேறு',
+      modalWrongTNTitle:'TN கண்டுபிடிக்கப்படவில்லை',
+      modalWrongTNBody:'இந்த டிராக்கிங் நம்பர் எந்த ஒதுக்கப்பட்ட பார்சலுடனும் பொருந்தவில்லை.',
+      modalWrongTNBtn:'மீண்டும் ஸ்கேன் செய்',
+      modalConfirmRetrievalTitle:'உறுதிப்படுத்தவும்',
+      modalConfirmRetrievalBody:'இன்னும் மீட்காத ஆர்டர்கள் உள்ளன. இந்த ஆர்டர்களை சேகரிக்க தொடர விரும்புகிறீர்களா?',
+      modalSkip:'தவிர்', modalContinue:'தொடரவும்',
+      doorsTitle:'பெட்டிகளை திறக்கிறோம்…',
+      doorsSub:'கதவுகள் திறப்பதை பாருங்கள், பின்னர் பார்சலை எடுக்க ஒவ்வொன்றையும் தட்டவும்',
+      doorsSubDone:'அனைத்து கதவுகளும் திறந்துள்ளன! சேகரிக்க தட்டுங்கள்.',
+      doorsSubCollected:'அனைத்து பார்சல்களும் சேகரிக்கப்பட்டன! கீழே தட்டவும்.',
+      doorsContinueBtn:'அனைத்தும் எடுக்கப்பட்டன — தொடரவும்',
+      splashTitle:'SPX Locker பயிற்சிக்கு வரவேற்கிறோம்',
+      splashBody:'என்ன செய்வதென்று தெரியவில்லையா? <b style="color:#e8380d;">திரையின் அடிப்பகுதியை</b> பாருங்கள் — உங்கள் வழிகாட்டி அடுத்து என்ன தட்ட வேண்டும் என்று சொல்லும்.',
+      splashBtn:'நான் தயார்',splashTitle:'SPX Locker பயிற்சிக்கு வரவேற்கிறோம்',splashB1:'இது லாக்கர் செயல்முறையை கற்க உதவும் பயிற்சி',splashB2:'உதவிக்கு கீழ் வழிகாட்டி பட்டியை பின்பற்றவும்',splashB3:'தொடங்க அடுத்த திரையில் ஓட்டுனர் செயல்பாடு என்பதை தட்டவும்',langPickNext:'தொடரவும் →',
+      forcedTooBig:'பார்சல் இதற்கு மிகவும் பெரியது',
+      forcedTapUpsize:'பெரிய பெட்டியை முயற்சிக்க செல் பெரிதாக்கு என்பதை தட்டவும்.',
+      forcedMaxReached:'அதிகபட்ச அளவை அடைந்தோம். பார்சல் இன்னும் பொருந்தவில்லை.',
+      forcedTapX:'இந்த டெபாசிட்டை ரத்து செய்ய வேண்டும். மேலே ✕ பட்டனை தட்டவும்.',
+      forcedWellDone:'நன்று!',
+      forcedWellDoneBody:'✕ பட்டனை பயன்படுத்தி டெபாசிட்டை சரியாக ரத்து செய்தீர்கள்.',
+      forcedKeyTakeaway:'முக்கிய பாடம்: பார்சலை வலுக்கட்டாயமாக திணிக்காதீர்கள். ✕ பட்டன் உங்கள் ரத்து நடவடிக்கை.',
+      forcedGotIt:'புரிந்தது — தொடரவும் →',
+      exitBtn:'சிமுலேட்டரை விட்டு வெளியேறு',
+      guideLabel:'SPX வழிகாட்டி',driverOp:'ஓட்டுனர் செயல்பாடு'
+    },
+    HI:{
+      regTitle:'ड्राइवर पंजीकरण', regSub:'शुरू करने से पहले अपना विवरण भरें।',
+      regIDLabel:'ड्राइवर ID *', regIDHint:'(केवल नंबर)',
+      regNameLabel:'ड्राइवर का नाम *', regNameHint:'(जैसे SPX_FTE_Jon)',
+      regRouteLabel:'रूट *', regRouteHint:'(जैसे 26A)',
+      regAgencyLabel:'एजेंसी *',
+      regContinue:'जारी रखें →',
+      modeTitle:'मोड चुनें',
+      modeTrain:'प्रशिक्षण', modeTest:'मूल्यांकन',
+      modeDescTrain:'चरण-दर-चरण संकेतों के साथ गाइडेड फ्लो',
+      modeDescTest:'परिदृश्य प्रश्न — कोई संकेत नहीं दिखाया जाएगा',
+      modeBegin:'शुरू करें',
+      p1Title:'SPX Locker @ Galaxis, S138522',
+      p1Sub:'शुरू करने के लिए एक सेवा चुनें।',
+      p1Collection:'संग्रह',
+      p4LoginOK:'लॉगिन सफल',
+      p4Sub:'लॉकर कार्य समाप्त करने के लिए निर्देशों का पालन करें।',
+      p4Retrieval:'लंबित पुनर्प्राप्ति', p4Delivery:'लंबित डिलीवरी',
+      p4Start:'कार्य शुरू करें',
+      p5Header:'पार्सल पुनर्प्राप्ति के लिए लंबित',
+      p5SubNote:'अगले चरण पर जाने से पहले सुनिश्चित करें कि सभी दरवाज़े बंद हैं।',
+      p5HintText:'प्रत्येक क्षेत्र पर Open टैप करें। सभी पार्सल इकट्ठा करें, फिर Complete Retrieval टैप करें।',
+      p5Logout:'लॉग आउट', p5Complete:'पुनर्प्राप्ति पूर्ण करें',
+      p7Title:'लॉकर पुनर्प्राप्ति सफल', p7Sub:'लॉकर पुनर्प्राप्ति पूर्ण हो गई',
+      p7Pending:'ड्राइवर ऐप में पार्सल स्कैन करें',
+      p7PendingSub:'डिलीवरी जारी रखने से पहले, SPX ड्राइवर ऐप के माध्यम से सभी एकत्रित पार्सल स्कैन करें',
+      p7Logout:'लॉग आउट', p7Continue:'डिलीवरी जारी रखें',
+      p8Delivered:'डिलीवर किया:', p8Placeholder:'SPXTN स्कैन करें / दर्ज करें',
+      p8ScanBtn:'बारकोड स्कैन सिमुलेट करें',
+      p8InboundLabel:'आने वाला पार्सल',
+      p8ReopenCannot:'सेल फिर से खोलें | फिट नहीं',
+      p8Logout:'लॉग आउट', p8CompDeliv:'डिलीवरी पूर्ण करें',
+      p10InboundLabel:'आने वाला पार्सल',
+      p10UpsizeBtn:'सेल बड़ा करें', p10ReopenBtn:'सेल फिर से खोलें',
+      p10DoneBtn:'हो गया और सभी दरवाज़े बंद करें',
+      p10CantFit:'पार्सल फिट नहीं हो रहा।',
+      p10CantFitSub:'इस डिपॉजिट को रद्द करने और पार्सल को हब वापस करने के लिए ऊपर ✕ बटन दबाएं।',
+      p11Title:'डिपॉजिट की पुष्टि हो गई!',
+      p11Hint:'लॉकर छोड़ने से पहले हमेशा इस पुष्टि का इंतजार करें।',
+      p12Title:'डिलीवरी पूर्ण!',
+      p12Sub:'सभी पार्सल सफलतापूर्वक जमा किए गए।',
+      p12SummaryTitle:'सत्र सारांश',
+      p12Driver:'ड्राइवर', p12Route:'रूट', p12Delivered:'डिलीवर किए गए पार्सल', p12Mode:'मोड',
+      p12Assess:'मूल्यांकन लें →', p12Exit:'सिमुलेटर से बाहर निकलें',
+      quizHeader:'मूल्यांकन', quizHeaderSub:'परिदृश्य-आधारित — कोई संकेत नहीं',
+      quizOf:'में से', quizNextQ:'अगला प्रश्न', quizViewRes:'परिणाम देखें',
+      quizCorrect:'सही!', quizNotQuite:'बिल्कुल सही नहीं। विकल्प फिर से पढ़ें और अलग उत्तर आज़माएं।',
+      scoreHeader:'परिणाम', scoreHeaderSub:'SPX Locker मूल्यांकन',
+      scorePerfect:'परफेक्ट स्कोर!', scoreComplete:'मूल्यांकन पूर्ण!',
+      scorePerfectSub:'शाबाश! पहली बार में सब सही किया।',
+      scoreCompleteSub:'अच्छा प्रयास। नीचे दिए टॉपिक्स देखें।',
+      scoreReview:'इन टॉपिक्स की समीक्षा करें:',
+      scoreExit:'सिमुलेटर से बाहर निकलें',
+      modalLogoutTitle:'लॉग आउट',
+      modalLogoutBody:'आपने लॉकर कार्य पूरा नहीं किया। क्या आप वाकई लॉग आउट करना चाहते हैं?',
+      modalLogoutConfirm:'लॉग आउट', modalLogoutCancel:'जारी रखें',
+      modalExitTitle:'सिमुलेटर से बाहर निकलें',
+      modalExitBody:'शुरुआती स्क्रीन पर वापस जाएं? सारी प्रगति रीसेट हो जाएगी।',
+      modalExitCancel:'रद्द करें', modalExitConfirm:'बाहर निकलें',
+      modalWrongTNTitle:'TN नहीं मिला',
+      modalWrongTNBody:'यह ट्रैकिंग नंबर किसी भी असाइन किए गए पार्सल से मेल नहीं खाता।',
+      modalWrongTNBtn:'फिर से स्कैन करें',
+      modalConfirmRetrievalTitle:'पुष्टि करें',
+      modalConfirmRetrievalBody:'अभी भी कुछ ऑर्डर पुनर्प्राप्ति के लिए बाकी हैं। क्या आप इन्हें इकट्ठा करना जारी रखना चाहते हैं?',
+      modalSkip:'छोड़ें', modalContinue:'जारी रखें',
+      doorsTitle:'डिब्बे खोले जा रहे हैं…',
+      doorsSub:'दरवाज़े खुलते देखें, फिर पार्सल लेने के लिए हर एक पर टैप करें',
+      doorsSubDone:'सभी दरवाज़े खुले! इकट्ठा करने के लिए टैप करें।',
+      doorsSubCollected:'सभी पार्सल इकट्ठा! नीचे टैप करें।',
+      doorsContinueBtn:'सभी लिए गए — जारी रखें',
+      splashTitle:'SPX Locker प्रशिक्षण में आपका स्वागत है',
+      splashBody:'क्या करना है नहीं पता? <b style="color:#e8380d;">स्क्रीन के नीचे</b> देखें — आपका गाइड बताएगा कि आगे क्या टैप करना है।',
+      splashBtn:'मैं तैयार हूं',splashTitle:'SPX Locker प्रशिक्षण में आपका स्वागत है',splashB1:'यह लॉकर प्रक्रिया सीखने में मदद करने के लिए एक अभ्यास है',splashB2:'सहायता के लिए नीचे गाइड बार का पालन करें',splashB3:'शुरू करने के लिए अगली स्क्रीन पर ड्राइवर ऑपरेशन टैप करें',langPickNext:'जारी रखें →',
+      forcedTooBig:'पार्सल इसके लिए बहुत बड़ा है',
+      forcedTapUpsize:'बड़े डिब्बे के लिए Upsize Cell टैप करें।',
+      forcedMaxReached:'अधिकतम आकार पहुंच गया। पार्सल अभी भी फिट नहीं।',
+      forcedTapX:'इस डिपॉजिट को रद्द करना होगा। ऊपर ✕ बटन टैप करें।',
+      forcedWellDone:'शाबाश!',
+      forcedWellDoneBody:'आपने ✕ बटन का उपयोग करके सही तरीके से डिपॉजिट रद्द किया।',
+      forcedKeyTakeaway:'मुख्य सीख: पार्सल को जबरदस्ती मत डालें। ✕ बटन आपकी रद्द करने की क्रिया है।',
+      forcedGotIt:'समझ गया — जारी रखें →',
+      exitBtn:'सिमुलेटर से बाहर निकलें',
+      guideLabel:'SPX गाइड',driverOp:'ड्राइवर ऑपरेशन'
+    },
+    ZH:{
+      regTitle:'司机注册', regSub:'开始前请填写您的信息。',
+      regIDLabel:'司机ID *', regIDHint:'(仅限数字)',
+      regNameLabel:'司机姓名 *', regNameHint:'(如 SPX_FTE_Jon)',
+      regRouteLabel:'路线 *', regRouteHint:'(如 26A)',
+      regAgencyLabel:'机构 *',
+      regContinue:'继续 →',
+      modeTitle:'选择模式',
+      modeTrain:'培训', modeTest:'考核',
+      modeDescTrain:'逐步提示的引导流程',
+      modeDescTest:'情景问题 — 不显示提示',
+      modeBegin:'开始',
+      p1Title:'SPX Locker @ Galaxis, S138522',
+      p1Sub:'请选择服务开始。',
+      p1Collection:'取件',
+      p4LoginOK:'登录成功',
+      p4Sub:'请按照说明完成储物柜任务。',
+      p4Retrieval:'待取件', p4Delivery:'待配送',
+      p4Start:'开始任务',
+      p5Header:'个包裹待取件',
+      p5SubNote:'进行下一步前请确保所有门已关闭。',
+      p5HintText:'逐一点击每个区域的开启。收集所有包裹后点击完成取件。',
+      p5Logout:'退出登录', p5Complete:'完成取件',
+      p7Title:'储物柜取件成功', p7Sub:'储物柜取件已完成',
+      p7Pending:'在司机App中扫描包裹',
+      p7PendingSub:'继续配送前，请通过SPX司机App扫描所有已取出的包裹',
+      p7Logout:'退出登录', p7Continue:'继续配送',
+      p8Delivered:'已配送:', p8Placeholder:'请扫描/输入SPXTN',
+      p8ScanBtn:'模拟条码扫描',
+      p8InboundLabel:'入库包裹',
+      p8ReopenCannot:'重新开启格子 | 放不进',
+      p8Logout:'退出登录', p8CompDeliv:'完成配送',
+      p10InboundLabel:'入库包裹',
+      p10UpsizeBtn:'扩大格子', p10ReopenBtn:'重新开启格子',
+      p10DoneBtn:'完成并关闭所有门',
+      p10CantFit:'包裹放不进去。',
+      p10CantFitSub:'请点击上方的✕按钮取消此次存入并将包裹带回集散中心。',
+      p11Title:'存入确认！',
+      p11Hint:'离开储物柜前请等待此确认界面。',
+      p12Title:'配送完成！',
+      p12Sub:'所有包裹已成功存入。',
+      p12SummaryTitle:'会话摘要',
+      p12Driver:'司机', p12Route:'路线', p12Delivered:'已配送包裹', p12Mode:'模式',
+      p12Assess:'参加考核 →', p12Exit:'退出模拟器',
+      quizHeader:'考核', quizHeaderSub:'情景题 — 无提示',
+      quizOf:'共', quizNextQ:'下一题', quizViewRes:'查看结果',
+      quizCorrect:'正确！', quizNotQuite:'不对哦，再读一遍选项，试试其他答案。',
+      scoreHeader:'结果', scoreHeaderSub:'SPX储物柜考核',
+      scorePerfect:'满分！', scoreComplete:'考核完成！',
+      scorePerfectSub:'太棒了！第一次就全部答对。',
+      scoreCompleteSub:'不错的努力。查看下方主题继续学习。',
+      scoreReview:'复习这些主题：',
+      scoreExit:'退出模拟器',
+      modalLogoutTitle:'退出登录',
+      modalLogoutBody:'您尚未完成储物柜任务。确定要退出登录吗？',
+      modalLogoutConfirm:'退出登录', modalLogoutCancel:'继续',
+      modalExitTitle:'退出模拟器',
+      modalExitBody:'返回开始界面？所有进度将被重置。',
+      modalExitCancel:'取消', modalExitConfirm:'退出',
+      modalWrongTNTitle:'未找到TN',
+      modalWrongTNBody:'此跟踪号与任何已分配的包裹不匹配。请重新扫描正确的包裹。',
+      modalWrongTNBtn:'重新扫描',
+      modalConfirmRetrievalTitle:'确认',
+      modalConfirmRetrievalBody:'还有订单待取件。您要继续收集这些订单吗？',
+      modalSkip:'跳过', modalContinue:'继续',
+      doorsTitle:'正在开启格子…',
+      doorsSub:'观看门开启，然后点击每个格子取出包裹',
+      doorsSubDone:'所有门已开启！点击每个格子取件，再点一次关闭。',
+      doorsSubCollected:'所有包裹已取出！点击下方继续。',
+      doorsContinueBtn:'全部取出 — 继续',
+      splashTitle:'欢迎来到SPX储物柜培训',
+      splashBody:'不知道怎么操作？看<b style="color:#e8380d;">屏幕底部</b> — 您的向导会告诉您下一步点哪里。',
+      splashBtn:'我准备好了',splashTitle:'欢迎来到SPX储物柜培训',splashB1:'这是帮助您学习储物柜流程的练习',splashB2:'随时查看底部的引导栏获取帮助',splashB3:'在下一个屏幕上点击司机操作开始',langPickNext:'继续 →',
+      forcedTooBig:'包裹对这个格子来说太大了',
+      forcedTapUpsize:'点击扩大格子试试更大的格子。',
+      forcedMaxReached:'已达最大尺寸。包裹仍然放不进去。',
+      forcedTapX:'必须取消此次存入。点击上方的✕按钮。',
+      forcedWellDone:'做得好！',
+      forcedWellDoneBody:'您正确地使用✕按钮取消了存入操作。',
+      forcedKeyTakeaway:'关键要点：不要强行放入包裹。✕按钮是您的取消操作。',
+      forcedGotIt:'明白了 — 继续 →',
+      exitBtn:'退出模拟器',
+      guideLabel:'SPX向导',driverOp:'司机操作'
+    }
+  };
+
+  /* ── Apply language to full UI ── */
+  function applyLang(l){
+    var s=UI_STRINGS[l]; if(!s) return;
+
+    /* Registration */
+    var rTitle=$e('pReg').querySelector('[data-t="regTitle"]'); if(rTitle) rTitle.textContent=s.regTitle;
+    setTxt('regTitle',s.regTitle); setTxt('regSub',s.regSub);
+    setLbl('regDriverID',s.regIDLabel,s.regIDHint);
+    setLbl('regDriverName',s.regNameLabel,s.regNameHint);
+    setLbl('regRoute',s.regRouteLabel,s.regRouteHint);
+    setLbl('regAgency',s.regAgencyLabel,'');
+    setTxt('regBtn',s.regContinue);
+    setAttr('regDriverID','placeholder','e.g. 123456');
+    setAttr('regDriverName','placeholder','e.g. SPX_FTE_Jon');
+    setAttr('regRoute','placeholder','e.g. 26A');
+    setAttr('regAgency','placeholder','e.g. SPX Express');
+
+    /* Mode */
+    setTxt('btnTrain',s.modeTrain); setTxt('btnTest',s.modeTest);
+    setTxt('modeDesc',S.mode==='training'?s.modeDescTrain:s.modeDescTest);
+    setTxt('beginBtn',s.modeBegin);
+
+    /* P5 */
+    setTxt('logoutP5Btn',s.p5Logout); setTxt('completeRetrievalBtn',s.p5Complete);
+
+    /* P7 */
+    setTxt('logoutP7Btn',s.p7Logout); setTxt('btnContinue',s.p7Continue+' (5s)');
+
+    /* P8 */
+    setAttr('tnInput','placeholder',s.p8Placeholder);
+    setTxt('scanBarcodeBtn','📷 '+s.p8ScanBtn);
+    setTxt('logoutP8Btn',s.p8Logout); setTxt('btnCompDeliv',s.p8CompDeliv);
+
+    /* P10 */
+    setTxt('doneCloseBtn',s.p10DoneBtn);
+
+    /* Buttons on p12 */
+    setTxt('takeAssessBtn',s.p12Assess); setTxt('exitFromP12Btn',s.p12Exit);
+
+    /* Modals */
+    setHtml('modalLogout','<div class="mbox"><h3>'+s.modalLogoutTitle+'</h3><p>'+s.modalLogoutBody+'</p><div class="mbtns"><button class="ml" id="logoutBtn">'+s.modalLogoutConfirm+' (30s)</button><button class="mr" id="cancelLogoutBtn">'+s.modalLogoutCancel+'</button></div></div>');
+    setHtml('modalWrongTN','<div class="mbox"><h3>'+s.modalWrongTNTitle+'</h3><p>'+s.modalWrongTNBody+'</p><div class="mbtns"><button class="mc" id="rescanBtn">'+s.modalWrongTNBtn+'</button></div></div>');
+    setHtml('modalConfirmRetrieval','<div class="mbox"><h3>'+s.modalConfirmRetrievalTitle+'</h3><p>'+s.modalConfirmRetrievalBody+'</p><div class="mbtns"><button class="ml" id="skipRetrievalBtn">'+s.modalSkip+'</button><button class="mr" id="continueRetrievalBtn">'+s.modalContinue+'</button></div></div>');
+    setHtml('modalExit','<div class="mbox"><h3>'+s.modalExitTitle+'</h3><p>'+s.modalExitBody+'</p><div class="mbtns"><button class="ml" id="cancelExitBtn">'+s.modalExitCancel+'</button><button class="mr" id="doExitBtn">'+s.modalExitConfirm+'</button></div></div>');
+    /* Re-bind modal buttons after innerHTML replacement */
+    rebindModalBtns();
+
+    /* Doors overlay */
+    setTxt('doorsTitle',s.doorsTitle); setTxt('doorsSub',s.doorsSub);
+    setTxt('doorsContinueBtn',s.doorsContinueBtn);
+
+    /* Splash welcome card */
+    setTxt('splashTitle', s.splashTitle||'Welcome to SPX Locker Training');
+    setTxt('splashB1', s.splashB1||'This is a practice run to help you learn the locker process');
+    setTxt('splashB2', s.splashB2||'Follow the guide bar at the bottom for help');
+    var b3=$e('splashB3'); if(b3) b3.innerHTML=(s.splashB3||'Tap <b>Driver Operation</b> on the next screen to begin');
+    setTxt('splashOKBtn', s.splashBtn||"I'm Ready");
+    /* Lang pick next button */
+    setTxt('langPickNextBtn', s.langPickNext||'Continue →');
+
+    /* Exit btn */
+    /* Driver Operation */
+    setTxt('driverOpTxt',s.driverOp);
+
+    /* Guide label */
+    var gl=document.querySelector('.guide-char div'); if(gl) gl.textContent=s.guideLabel;
+
+    /* Score / quiz dynamic screens are re-rendered by their init functions so they pick up CUR_LANG automatically */
+  }
+
+  function setTxt(id,v){var e=$e(id); if(e) e.textContent=v;}
+  function setHtml(id,v){var e=$e(id); if(e) e.innerHTML=v;}
+  function setAttr(id,attr,v){var e=$e(id); if(e) e.setAttribute(attr,v);}
+  function setLbl(inputId,label,hint){
+    var input=$e(inputId); if(!input) return;
+    var lbl=input.previousElementSibling||input.parentElement.querySelector('label');
+    if(lbl) lbl.innerHTML=label+(hint?' <span style="font-weight:400;color:#aaa;">'+hint+'</span>':'');
+  }
+  function rebindModalBtns(){
+    var lb=$e('logoutBtn'); if(lb){lb.onclick=null; lb.addEventListener('click',performLogout);}
+    var clb=$e('cancelLogoutBtn'); if(clb){clb.onclick=null; clb.addEventListener('click',function(){closeModal('modalLogout');clearInterval(S.logoutInt);});}
+    var rb=$e('rescanBtn'); if(rb){rb.onclick=null; rb.addEventListener('click',function(){closeModal('modalWrongTN');clearTN();});}
+    var srb=$e('skipRetrievalBtn'); if(srb){srb.onclick=null; srb.addEventListener('click',function(){closeModal('modalConfirmRetrieval');proceedRetrieval();});}
+    var crb=$e('continueRetrievalBtn'); if(crb){crb.onclick=null; crb.addEventListener('click',function(){closeModal('modalConfirmRetrieval');});}
+    var ceb=$e('cancelExitBtn'); if(ceb){ceb.onclick=null; ceb.addEventListener('click',function(){closeModal('modalExit');});}
+    var deb=$e('doExitBtn'); if(deb){deb.onclick=null; deb.addEventListener('click',doExit);}
+  }
+
+  /* Event delegation on #app catches modal buttons even after innerHTML replacement */
+  var appEl=$e('app');
+  if(appEl) appEl.addEventListener('click',function(e){
+    var id=e.target.id||'';
+    if(id==='logoutBtn'){performLogout();}
+    else if(id==='cancelLogoutBtn'){closeModal('modalLogout');clearInterval(S.logoutInt);}
+    else if(id==='rescanBtn'){closeModal('modalWrongTN');clearTN();}
+    else if(id==='skipRetrievalBtn'){closeModal('modalConfirmRetrieval');proceedRetrieval();}
+    else if(id==='continueRetrievalBtn'){closeModal('modalConfirmRetrieval');}
+    else if(id==='cancelExitBtn'){closeModal('modalExit');}
+    else if(id==='doExitBtn'){doExit();}
+    else if(id==='trainingModalOKBtn'){closeModal('modalTraining');}
+    else if(id==='incompleteExitBtn'){closeModal('modalIncomplete');doExit();}
+    else if(id==='logoutP5Btn'||id==='logoutP7Btn'||id==='logoutP8Btn'){doLogout();}
+    else if(id==='takeAssessBtn'){if(!quizTransitionShown){quizTransitionShown=true;showQuizTransition();}else{goTo('pQuiz');}}
+    else if(id==='exitFromP12Btn'){confirmExit();}
+  });
+
+  /* ════ TOOLTIP WALKTHROUGH — P5 RETRIEVAL ════ */
+  var P5_WALK=[
+    {targetId:'areaList',             title:'Open Button',         body:'Tap Open on each area card. All compartment doors in that area will open. Collect all the parcels inside. Check the View TN List inside each area popup to know which parcels to take.', arrow:'top'},
+    {targetId:'completeRetrievalBtn', title:'Complete Retrieval',  body:'Tap this ONLY after you have opened every area and collected all parcels.', arrow:'top'},
+    {targetId:'logoutP5Btn',          title:'Log Out',             body:'Only tap this if you need to stop. Your task progress will not be saved.', arrow:'top'}
+  ];
+  var p5WalkShown=false;
+
+  function showTooltipWalkthrough(steps, onDone){
+    var idx=0;
+    var overlay=document.createElement('div');
+    overlay.className='wt-overlay on';
+    var backdrop=document.createElement('div');
+    backdrop.className='wt-backdrop';
+    var highlight=document.createElement('div');
+    highlight.className='wt-highlight';
+    var card=document.createElement('div');
+    card.className='wt-card';
+    overlay.appendChild(backdrop);
+    overlay.appendChild(highlight);
+    overlay.appendChild(card);
+    var app=$e('app'); if(app) app.appendChild(overlay);
+
+    function getElOffsetInApp(el){
+      /* Reliable position calc: walk offsetParent chain up to #app */
+      var appEl=$e('app');
+      var top=0, left=0, node=el;
+      while(node && node!==appEl){
+        top+=node.offsetTop||0;
+        left+=node.offsetLeft||0;
+        /* subtract any scroll on the offsetParent */
+        if(node.offsetParent && node.offsetParent!==appEl){
+          top-=node.offsetParent.scrollTop||0;
+        }
+        node=node.offsetParent;
+      }
+      return {top:top, left:left, w:el.offsetWidth, h:el.offsetHeight};
+    }
+
+    function render(){
+      var step=steps[idx];
+      var target=$e(step.targetId);
+      if(target){
+        var appEl=$e('app');
+        var pos=getElOffsetInApp(target);
+        var pad=6;
+        var top=pos.top-pad;
+        var left=pos.left-pad;
+        var w=pos.w+pad*2;
+        var h=pos.h+pad*2;
+        top=Math.max(0,top); left=Math.max(0,left);
+        highlight.style.cssText='position:absolute;border-radius:8px;box-shadow:0 0 0 3px #FFE000,0 0 0 9999px rgba(0,0,0,.65);z-index:601;pointer-events:none;transition:all .25s;top:'+top+'px;left:'+left+'px;width:'+w+'px;height:'+h+'px;';
+        /* Position card — prefer below, flip above if not enough room */
+        var appH=appEl.offsetHeight||844;
+        var appW=appEl.offsetWidth||390;
+        var cardW=Math.min(268, appW-20);
+        var cardH=180;
+        var cardTop, arrowDir;
+        if(top+h+14+cardH < appH-60){
+          cardTop=top+h+14; arrowDir='top';
+        } else {
+          cardTop=Math.max(50, top-cardH-14); arrowDir='bottom';
+        }
+        var cardLeft=Math.max(8, Math.min(left, appW-cardW-8));
+        card.style.cssText='position:absolute;background:#fff;border-radius:12px;padding:16px 16px 12px;width:'+cardW+'px;z-index:602;box-shadow:0 8px 32px rgba(0,0,0,.25);pointer-events:all;top:'+cardTop+'px;left:'+cardLeft+'px;';
+        card.className='wt-card arrow-'+arrowDir;
+      }
+      var isLast=idx===steps.length-1;
+      card.innerHTML=
+        '<div class="wt-card-title">'+step.title+'</div>'+
+        '<div class="wt-card-body">'+step.body+'</div>'+
+        '<div class="wt-card-footer">'+
+          '<span class="wt-counter">'+(idx+1)+' of '+steps.length+'</span>'+
+          '<div class="wt-btns">'+
+            (idx>0?'<button class="wt-btn-prev" id="wtBtnPrev">← Prev</button>':'')+
+            '<button class="wt-btn-next" id="wtBtnNext">'+(isLast?'Got it ✓':'Next →')+'</button>'+
+          '</div>'+
+        '</div>';
+      var prev=card.querySelector('#wtBtnPrev');
+      var next=card.querySelector('#wtBtnNext');
+      if(prev) prev.addEventListener('click',function(){idx--;render();});
+      if(next) next.addEventListener('click',function(){
+        if(idx<steps.length-1){idx++;render();}
+        else{overlay.remove();if(onDone)onDone();}
+      });
+    }
+    render();
+  }
+
+  /* Hook into iP5 to show walkthrough first time */
+  var _origIP5=iP5;
+  iP5=function(){
+    _origIP5();
+    if(!p5WalkShown&&S.mode==='training'){
+      p5WalkShown=true;
+      setTimeout(function(){showTooltipWalkthrough(P5_WALK, null);},400);
+    }
+  };
+
+  /* ════ TOOLTIP WALKTHROUGH — P8 DEPOSIT ════ */
+  var P8_WALK=[
+    {targetId:'scanBarcodeBtn', title:'Scan Button',        body:'Tap here to simulate scanning a parcel barcode. In real life this is where you use your Driver App camera.', arrow:'bottom'},
+    {targetId:'tnInput',        title:'✕ — Cancel Deposit', body:'Made a mistake or parcel cannot fit? After scanning, a ✕ appears beside the tracking number. Tap it to cancel the deposit and start over.', arrow:'bottom'},
+    {targetId:'btnCompDeliv',   title:'Complete Delivery',  body:'Tap this ONLY after ALL parcels have been deposited. It will be greyed out until you are done.', arrow:'top'}
+  ];
+  var p8WalkShown=false;
+
+  var _origIP8=iP8;
+  iP8=function(){
+    _origIP8();
+    if(!p8WalkShown&&S.mode==='training'){
+      p8WalkShown=true;
+      setTimeout(function(){showTooltipWalkthrough(P8_WALK, null);},400);
+    }
+  };
+
+  /* P10 walkthrough — shown first time deposit screen appears */
+  var P10_WALK=[
+    {targetId:'p10cellLabel',  title:'Assigned Compartment',  body:'This is the compartment the system has assigned for this parcel. You must deposit into this exact compartment only — do not use any other.', arrow:'bottom'},
+    {targetId:'p10cells',      title:'Upsize Cell',           body:'If the parcel does not fit, tap Upsize Cell to open a bigger compartment.', arrow:'bottom'},
+    {targetId:'p10xBtn',       title:'✕ — Cancel Deposit',   body:'Made a mistake or parcel cannot fit even after max upsize? Tap ✕ (top right of the tracking number field) to cancel the deposit and return the parcel to the hub.', arrow:'bottom'},
+    {targetId:'doneCloseBtn',  title:'Done & Close All Door', body:'Once the parcel is inside, tap this. Always wait for the black confirmation screen before walking away from the locker.', arrow:'top'}
+  ];
+  var p10WalkShown=false;
+
+  var _origIP10=iP10;
+  iP10=function(){
+    _origIP10();
+    if(!p10WalkShown&&S.mode==='training'){
+      p10WalkShown=true;
+      setTimeout(function(){showTooltipWalkthrough(P10_WALK, null);},500);
+    }
+  };
+
+  /* ════ QUIZ TRANSITION CARD ════ */
+  var quizTransitionShown=false;
+  /* Intercept the Take Assessment button */
+  var takeAssessBtn=$e('takeAssessBtn');
+  if(takeAssessBtn){
+    takeAssessBtn.removeEventListener('click',function(){goTo('pQuiz');});
+    takeAssessBtn.addEventListener('click',function(){
+      if(!quizTransitionShown){
+        quizTransitionShown=true;
+        showQuizTransition();
+      } else {
+        goTo('pQuiz');
+      }
+    });
+  }
+
+  function showQuizTransition(){
+    var overlay=document.createElement('div');
+    overlay.className='quiz-transition-overlay on';
+    overlay.innerHTML=
+      '<div class="quiz-transition-card">'+
+        '<div style="font-size:44px;margin-bottom:10px;">📋</div>'+
+        '<h3>Almost done!<br>Quick assessment ahead.</h3>'+
+        '<div style="margin:12px 0 18px;">'+
+          '<div class="qt-row"><div class="qt-icon-sm">80%</div><div class="qt-text"><b>Pass mark: 80%</b><br>You need to score 80% or above.</div></div>'+
+          '<div class="qt-row"><div class="qt-icon-sm" style="font-size:11px;">1st</div><div class="qt-text"><b>First attempt counts</b><br>You can retry wrong answers but your first-try score is recorded.</div></div>'+
+        '</div>'+
+        '<button id="startAssessBtn" style="background:#e8380d;color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;width:100%;cursor:pointer;">Start Assessment</button>'+
+      '</div>';
+    var app=$e('app'); if(app) app.appendChild(overlay);
+    var startBtn=overlay.querySelector('#startAssessBtn');
+    if(startBtn) startBtn.addEventListener('click',function(){
+      overlay.remove();
+      goTo('pQuiz');
+    });
+  }
+
+  /* ════ GUIDE DOCKED BAR JS (change 4) ════ */
+  var G={tipIdx:0,currentPage:''};
+
+  function showGuide(pageId){
+    G.currentPage=pageId; G.tipIdx=0;
+    var tips=GUIDE_TIPS[pageId];
+    var bar=$e('guideBar');
+    if(!tips||tips.length===0){if(bar)bar.classList.remove('on'); return;}
+    bar.classList.add('on');
+    /* Position: above bbar on pages with buttons, above safe area on others */
+    var noBbar=['pReg','pMode','p11','p12','pQuiz','pScore'];
+    bar.style.bottom=noBbar.indexOf(pageId)>=0
+      ? 'calc(env(safe-area-inset-bottom))'
+      : 'calc(58px + env(safe-area-inset-bottom))';
+    renderGuideBar(tips);
+  }
+
+  function renderGuideBar(tips){
+    var textEl=$e('guideBarText');
+    var dotsEl=$e('guideBarDots');
+    var prevBtn=$e('guideBarPrev');
+    var nextBtn=$e('guideBarNext');
+    if(!textEl) return;
+    textEl.innerHTML=tips[G.tipIdx];
+    /* Dots */
+    if(dotsEl){
+      dotsEl.innerHTML=tips.map(function(_,i){
+        return '<div class="guide-bar-dot'+(i===G.tipIdx?' on':'')+'"></div>';
+      }).join('');
+    }
+    if(prevBtn) prevBtn.disabled=G.tipIdx===0;
+    if(nextBtn) nextBtn.disabled=G.tipIdx===tips.length-1;
+    /* Hide nav if only 1 tip */
+    if(prevBtn) prevBtn.style.display=tips.length>1?'':'none';
+    if(nextBtn) nextBtn.style.display=tips.length>1?'':'none';
+    if(dotsEl) dotsEl.style.display=tips.length>1?'flex':'none';
+  }
+
+  /* Bind docked bar buttons */
+  var guideBarClose=$e('guideBarClose');
+  if(guideBarClose) guideBarClose.addEventListener('click',function(){
+    var bar=$e('guideBar'); if(bar) bar.classList.remove('on');
+  });
+  var guideBarPrev=$e('guideBarPrev');
+  if(guideBarPrev) guideBarPrev.addEventListener('click',function(){
+    var tips=GUIDE_TIPS[G.currentPage]; if(!tips)return;
+    if(G.tipIdx>0){G.tipIdx--; renderGuideBar(tips);}
+  });
+  var guideBarNext=$e('guideBarNext');
+  if(guideBarNext) guideBarNext.addEventListener('click',function(){
+    var tips=GUIDE_TIPS[G.currentPage]; if(!tips)return;
+    if(G.tipIdx<tips.length-1){G.tipIdx++; renderGuideBar(tips);}
+  });
+  /* Avatar tap — re-show bar if closed */
+  var guideAvatar=$e('guideAvatar');
+  if(guideAvatar) guideAvatar.addEventListener('click',function(){
+    var tips=GUIDE_TIPS[G.currentPage]; if(!tips||!tips.length)return;
+    var bar=$e('guideBar'); if(bar) bar.classList.add('on');
+    G.tipIdx=0; renderGuideBar(tips);
+  });
+
+  /* Hook into goTo */
+  var _origGoTo=goTo;
+  goTo=function(pid){_origGoTo(pid); showGuide(pid);};
+
+  /* Show splash on load */
+  setTimeout(function(){
+    var s=$e('splashOverlay'); if(s) s.style.display='flex';
+  }, 400);
+
+});
+</script>
+</div>
+</div>
+</body>
+</html>
