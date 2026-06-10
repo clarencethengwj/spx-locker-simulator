@@ -1740,22 +1740,31 @@ function showScore(){
 
   /* Per-question results — Q1–Q9 in fixed order */
   var qResults={};
-  S.quizBank.forEach(function(q,i){
-    var qNum=q.img||('Q'+(i+1));
-    var missed=S.quizMistakes.some(function(m){return m.correctText===q.correctText;});
-    qResults[qNum]=missed?'Fail':'Pass';
-  });
-  /* Build Q1–Q9 in order */
+  if(S.quizBank && S.quizBank.length>0){
+    S.quizBank.forEach(function(q,i){
+      var qNum=q.img||('Q'+(i+1));
+      var missed=S.quizMistakes.some(function(m){return m.correctText===q.correctText;});
+      qResults[qNum]=missed?'Fail':'Pass';
+    });
+  }
+  /* Build Q1–Q9 in fixed order — empty string if not answered */
   var qCols={};
   for(var qi=1;qi<=9;qi++){
     var key='Q'+qi;
-    qCols[key]=qResults[key]||'N/A';
+    qCols[key]=qResults[key]||'';
   }
 
-  /* Date + Time split (Singapore time) */
+  /* Date + Time split — explicit formatting for reliability */
   var now=new Date();
-  var sgDate=now.toLocaleDateString('en-SG',{timeZone:'Asia/Singapore',day:'2-digit',month:'2-digit',year:'numeric'});
-  var sgTime=now.toLocaleTimeString('en-SG',{timeZone:'Asia/Singapore',hour:'2-digit',minute:'2-digit',hour12:false});
+  /* Convert to Singapore time */
+  var sgNow=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Singapore'}));
+  var dd=String(sgNow.getDate()).padStart(2,'0');
+  var mm=String(sgNow.getMonth()+1).padStart(2,'0');
+  var yyyy=sgNow.getFullYear();
+  var hh=String(sgNow.getHours()).padStart(2,'0');
+  var min=String(sgNow.getMinutes()).padStart(2,'0');
+  var sgDate=dd+'/'+mm+'/'+yyyy;
+  var sgTime=hh+':'+min;
 
   /* Device fingerprint */
   var deviceID=getDeviceFingerprint();
