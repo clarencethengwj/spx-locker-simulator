@@ -954,7 +954,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;display:flex;justify-content:center
 
 <script>
 /* ════ CONSTANTS ════ */
-var SHEET_URL='https://script.google.com/macros/s/AKfycbyLYMIV8DogdVy2Sll5oPmfDaQb0uj4PBcIUBAakbbFdHxPlYxV_lLFvTbkY87i1ZT2EA/exec';
+var SHEET_URL='https://script.google.com/macros/s/AKfycbzerfjhtm2wKSR28uWM4C49Q2MfoOjHiDdh9U12sHRu0Or4L_WnxvuGXDo3dVb7pPtS-A/exec';
 var MAX_DEPOSITS = 3;
 var TN_POOL = [
   {tn:'SG1234567890AB',upsize:0},
@@ -1159,14 +1159,14 @@ function submitReg(){
 /* ════ GOOGLE SHEETS SUBMISSION ════ */
 function submitToSheet(data){
   if(!SHEET_URL) return;
-  /* Use no-cors fetch — response will be opaque but data still lands in Sheet */
   try {
-    fetch(SHEET_URL, {
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(data)
-    }).catch(function(err){console.warn('Sheet submit error:',err);});
+    /* Encode as URL params to avoid JSON truncation with no-cors */
+    var params=Object.keys(data).map(function(k){
+      return encodeURIComponent(k)+'='+encodeURIComponent(data[k]||'');
+    }).join('&');
+    /* Use GET with params to sidestep no-cors POST body issues */
+    fetch(SHEET_URL+'?'+params,{method:'GET',mode:'no-cors'})
+      .catch(function(err){console.warn('Sheet submit error:',err);});
   } catch(e){
     console.warn('Sheet submit failed:',e);
   }
@@ -1592,11 +1592,11 @@ function iP12(){
   var mm=String(sgNow.getMonth()+1).padStart(2,'0');
   var yyyy=sgNow.getFullYear();
   var hh=String(sgNow.getHours()).padStart(2,'0');
-  var min=String(sgNow.getMinutes()).padStart(2,'0');
+  var mn=String(sgNow.getMinutes()).padStart(2,'0');
   function minsEl(start,end){if(!start||!end)return '';return (Math.round((end-start)/6000)/10).toFixed(1);}
   submitToSheet({
     date:         dd+'/'+mm+'/'+yyyy,
-    time:         hh+':'+min,
+    time:         hh+':'+mn,
     driverName:   DRIVER.name,
     driverID:     DRIVER.id,
     route:        DRIVER.route,
@@ -1764,10 +1764,10 @@ function showScore(){
   var quizDur=minsElapsed(S.quizStartTime,S.quizEndTime);
   var totalDur=minsElapsed(S.simStartTime,S.quizEndTime);
 
-  /* Score */
+  /* Score — prefix scoreRaw with apostrophe trick via text format */
   var firstTryCorrect=S.quizBank.length-S.quizMistakes.length;
   var scorePct=Math.round((firstTryCorrect/S.quizBank.length)*100)+'%';
-  var scoreRaw=firstTryCorrect+'/'+S.quizBank.length;
+  var scoreRaw=firstTryCorrect+' of '+S.quizBank.length; /* avoid slash — Sheets treats X/Y as date */
 
   /* Per-question results — Q1–Q9 in fixed order */
   var qResults={};
@@ -1785,17 +1785,16 @@ function showScore(){
     qCols[key]=qResults[key]||'';
   }
 
-  /* Date + Time split — explicit formatting for reliability */
+  /* Date + Time — explicit to avoid locale issues */
   var now=new Date();
-  /* Convert to Singapore time */
   var sgNow=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Singapore'}));
   var dd=String(sgNow.getDate()).padStart(2,'0');
   var mm=String(sgNow.getMonth()+1).padStart(2,'0');
   var yyyy=sgNow.getFullYear();
-  var hh=String(sgNow.getHours()).padStart(2,'0');
-  var min=String(sgNow.getMinutes()).padStart(2,'0');
+  var hh=String(sgNow.getHours()).padStart(2,'0');   /* always 24h */
+  var mn=String(sgNow.getMinutes()).padStart(2,'0');
   var sgDate=dd+'/'+mm+'/'+yyyy;
-  var sgTime=hh+':'+min;
+  var sgTime=hh+':'+mn;
 
   /* Device fingerprint */
   var deviceID=getDeviceFingerprint();
