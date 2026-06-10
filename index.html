@@ -1584,6 +1584,37 @@ function buildP11Next(){
 function iP12(){
   S.sessionComplete=true;
   S.simEndTime=Date.now();
+
+  /* Submit simulator-only row immediately */
+  var now=new Date();
+  var sgNow=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Singapore'}));
+  var dd=String(sgNow.getDate()).padStart(2,'0');
+  var mm=String(sgNow.getMonth()+1).padStart(2,'0');
+  var yyyy=sgNow.getFullYear();
+  var hh=String(sgNow.getHours()).padStart(2,'0');
+  var min=String(sgNow.getMinutes()).padStart(2,'0');
+  function minsEl(start,end){if(!start||!end)return '';return (Math.round((end-start)/6000)/10).toFixed(1);}
+  submitToSheet({
+    date:         dd+'/'+mm+'/'+yyyy,
+    time:         hh+':'+min,
+    driverName:   DRIVER.name,
+    driverID:     DRIVER.id,
+    route:        DRIVER.route,
+    agency:       DRIVER.agency,
+    mode:         S.mode,
+    scorePct:     '',
+    scoreRaw:     '',
+    q1:'',q2:'',q3:'',q4:'',q5:'',q6:'',q7:'',q8:'',q9:'',
+    wrongTNCount: S.errorCount||0,
+    upsizeCount:  S.upsizeTotal||0,
+    reopenCount:  S.reopenCount||0,
+    simDuration:  minsEl(S.simStartTime,S.simEndTime),
+    quizDuration: '',
+    totalDuration:'',
+    deviceID:     getDeviceFingerprint(),
+    completed:    'Simulator Only'
+  });
+
   html('summaryCard','<div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;">Session Summary</div>'+
     '<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Driver</span><span style="font-weight:600;">'+DRIVER.name+'</span></div>'+
     '<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #f0f0f0;"><span style="color:#888;">Route</span><span style="font-weight:600;">'+DRIVER.route+'</span></div>'+
