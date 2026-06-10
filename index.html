@@ -1105,7 +1105,8 @@ function resetState(){
        logoTaps:0,logoTmr:null,qrInt:null,continueInt:null,logoutInt:null,scanTmr:null,
        quizBank:[],quizIdx:0,quizMistakes:[],quizWrongThisQ:false,flowErrors:[],
        sessionComplete:false,kbUpper:true,errorCount:0,_doorsOpen:{},
-       simStartTime:null,simEndTime:null,quizStartTime:null,quizEndTime:null};
+       simStartTime:null,simEndTime:null,quizStartTime:null,quizEndTime:null,
+       retakeCount:0};
   p5WalkShown=false; p8WalkShown=false; p10WalkShown=false;
   preDoorsShown=false;
 }
@@ -1160,13 +1161,14 @@ function submitReg(){
 function submitToSheet(data){
   if(!SHEET_URL) return;
   try {
-    /* Encode as URL params to avoid JSON truncation with no-cors */
     var params=Object.keys(data).map(function(k){
-      return encodeURIComponent(k)+'='+encodeURIComponent(data[k]||'');
+      var v=data[k];
+      if(v===''||v===null||v===undefined) v='-';
+      return encodeURIComponent(k)+'='+encodeURIComponent(v);
     }).join('&');
-    /* Use GET with params to sidestep no-cors POST body issues */
-    fetch(SHEET_URL+'?'+params,{method:'GET',mode:'no-cors'})
-      .catch(function(err){console.warn('Sheet submit error:',err);});
+    /* Use Image ping — bypasses CORS completely, works in all browsers */
+    var img=new Image();
+    img.src=SHEET_URL+'?'+params;
   } catch(e){
     console.warn('Sheet submit failed:',e);
   }
@@ -1595,7 +1597,7 @@ function iP12(){
   var mn=String(sgNow.getMinutes()).padStart(2,'0');
   function minsEl(start,end){if(!start||!end)return '';return (Math.round((end-start)/6000)/10).toFixed(1);}
   submitToSheet({
-    date:         dd+'/'+mm+'/'+yyyy,
+    date:         dd+'-'+mm+'-'+yyyy,
     time:         hh+':'+mn,
     driverName:   DRIVER.name,
     driverID:     DRIVER.id,
@@ -1766,7 +1768,8 @@ function showScore(){
 
   /* Score — prefix scoreRaw with apostrophe trick via text format */
   var firstTryCorrect=S.quizBank.length-S.quizMistakes.length;
-  var scorePct=Math.round((firstTryCorrect/S.quizBank.length)*100)+'%';
+  var scorePctDisplay=Math.round((firstTryCorrect/S.quizBank.length)*100)+'%';
+  var scorePct='Score: '+scorePctDisplay; /* prefix prevents Sheets treating as number */
   var scoreRaw=firstTryCorrect+' of '+S.quizBank.length; /* avoid slash — Sheets treats X/Y as date */
 
   /* Per-question results — Q1–Q9 in fixed order */
@@ -1793,7 +1796,7 @@ function showScore(){
   var yyyy=sgNow.getFullYear();
   var hh=String(sgNow.getHours()).padStart(2,'0');   /* always 24h */
   var mn=String(sgNow.getMinutes()).padStart(2,'0');
-  var sgDate=dd+'/'+mm+'/'+yyyy;
+  var sgDate=dd+'-'+mm+'-'+yyyy;  /* use dashes not slashes — prevents Sheets date parsing */
   var sgTime=hh+':'+mn;
 
   /* Device fingerprint */
@@ -1820,19 +1823,24 @@ function showScore(){
     quizDuration:  quizDur,
     totalDuration: totalDur,
     deviceID:      deviceID,
-    completed:     'Yes'
+    completed:     S.retakeCount>0?'Retake '+S.retakeCount:'Yes'
   });
 
   var body=$e('scoreBody'); if(!body)return;
   var allCorrect=S.quizMistakes.length===0;
+  var passed=firstTryCorrect/S.quizBank.length>=0.8;
+  var isRetake=S.retakeCount>0;
+
   body.innerHTML=
-    '<div style="width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:14px auto;border:6px solid '+(allCorrect?'#4caf50':'#e8380d')+';">'+
-      '<div style="font-size:26px;font-weight:900;color:'+(allCorrect?'#4caf50':'#e8380d')+';">'+scorePct+'</div>'+
+    '<div style="width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:14px auto;border:6px solid '+(passed?'#4caf50':'#e8380d')+';">'+
+      '<div style="font-size:26px;font-weight:900;color:'+(passed?'#4caf50':'#e8380d')+';">'+scorePctDisplay+'</div>'+
       '<div style="font-size:11px;color:#888;text-align:center;">'+scoreRaw+' correct</div>'+
     '</div>'+
-    '<div style="text-align:center;font-size:15px;font-weight:700;margin-bottom:6px;">'+(allCorrect?'Perfect Score!':'Assessment Complete!')+'</div>'+
-    '<div style="text-align:center;font-size:12px;color:#888;margin-bottom:6px;">'+(allCorrect?'Well done! You got everything right on the first try.':'Good effort. Look at the topics below to learn more.')+'</div>'+
-    (totalDur?'<div style="text-align:center;font-size:11px;color:#aaa;margin-bottom:14px;">Total time: '+totalDur+' mins</div>':'<div style="margin-bottom:14px;"></div>');
+    '<div style="text-align:center;font-size:15px;font-weight:700;margin-bottom:6px;">'+(passed?(allCorrect?'Perfect Score! 🎉':'You Passed! ✅'):'Not Quite')+'</div>'+
+    '<div style="text-align:center;font-size:12px;color:#555;margin-bottom:6px;">'+(passed
+      ? (isRetake?'Well done! You passed on retake '+S.retakeCount+'.':'Well done! You got '+scorePctDisplay+' on your first try.')
+      : 'You scored <b>'+scorePctDisplay+'</b>. You need <b>80%</b> to pass. Review the topics below and try again.')+'</div>'+
+    (totalDur?'<div style="text-align:center;font-size:11px;color:#aaa;margin-bottom:10px;">Total time: '+totalDur+' mins</div>':'<div style="margin-bottom:10px;"></div>');
 
   if(S.quizMistakes.length>0){
     var rev=document.createElement('div');
@@ -1847,10 +1855,39 @@ function showScore(){
     body.appendChild(rev);
   }
 
-  var nb=document.createElement('button'); nb.className='bp'; nb.style.cssText='margin-top:14px;margin-bottom:9px;';
-  nb.textContent='↩ Exit Simulator';
-  nb.addEventListener('click',function(){confirmExit();});
-  body.appendChild(nb);
+  /* Buttons — padded so they sit above the guide bar */
+  var btnWrap=document.createElement('div');
+  btnWrap.style.cssText='padding:14px 0 80px;'; /* 80px clears guide bar */
+
+  if(!passed){
+    /* Retake button */
+    var retakeBtn=document.createElement('button');
+    retakeBtn.className='bp';
+    retakeBtn.style.cssText='width:100%;margin-bottom:10px;';
+    retakeBtn.textContent='🔄 Retake Quiz';
+    retakeBtn.addEventListener('click',function(){
+      S.retakeCount++;
+      S.quizStartTime=Date.now();
+      S.quizMistakes=[];
+      S.quizWrongThisQ=false;
+      S.quizIdx=0;
+      /* Rebuild quizBank with same order, re-shuffle options only */
+      S.quizBank=QUIZ_BANK.map(function(q){
+        var s=shuffleOpts(q);
+        return {sc:q.sc,img:q.img,imgLabel:q.imgLabel,q:q.q,opts:s.opts,ans:s.ans,exp:q.exp,correctText:q.correctText};
+      });
+      goTo('pQuiz');
+    });
+    btnWrap.appendChild(retakeBtn);
+  }
+
+  var exitBtn=document.createElement('button');
+  exitBtn.className=passed?'bp':'bp';
+  exitBtn.style.cssText='width:100%;background:'+(passed?'#e8380d':'#fff')+';color:'+(passed?'#fff':'#e8380d')+';border:1.5px solid #e8380d;';
+  exitBtn.textContent=passed?'✓ Done — Exit Simulator':'Exit Without Passing';
+  exitBtn.addEventListener('click',function(){confirmExit();});
+  btnWrap.appendChild(exitBtn);
+  body.appendChild(btnWrap);
 }
 
 /* ════ LOGOUT / EXIT ════ */
