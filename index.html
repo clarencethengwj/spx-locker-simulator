@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>SPX Locker Training Simulator</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -1018,13 +1021,13 @@ var QUIZ_BANK = [
     img:'Q4',imgLabel:'Door will not close',
     q:'What should you do?',
     opts:[
-      'Push harder until it closes',
-      'Mark the job as completed',
-      'Continue with the next parcel',
-      'Stop, take a photo and report the compartment number. Meanwhile, tap Upsize Cell to change to another compartment'
+      'Force the door shut and move on to the next parcel',
+      'Leave the door open and mark the job as completed',
+      'Take the parcel out and put it into any other empty compartment',
+      'Try to close the door again. If it still cannot close, stop, take a photo, report the compartment number, and tap Upsize Cell to change compartment'
     ],
-    correctText:'Stop, take a photo and report the compartment number. Meanwhile, tap Upsize Cell to change to another compartment',
-    exp:'If the door cannot close, stop immediately. Take a photo and report the compartment number. Then tap Upsize Cell to get a different compartment assigned for your parcel.'
+    correctText:'Try to close the door again. If it still cannot close, stop, take a photo, report the compartment number, and tap Upsize Cell to change compartment',
+    exp:'First try to close the door again. If it still will not close, stop immediately. Take a photo, report the compartment number, and tap Upsize Cell to get a different compartment assigned for your parcel.'
   },
   {
     sc:'You open the compartment to deposit your parcel. You see another parcel inside. The buyer details do not match your parcel.',
